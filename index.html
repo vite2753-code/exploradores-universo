@@ -11,8 +11,13 @@ header{padding:12px 16px 7px;text-align:center} header h1{font-size:24px;margin:
 .wrap{width:100%;max-width:900px;min-width:0;margin:0 auto;padding:10px 14px 30px;overflow-x:clip}.layout{width:100%;min-width:0}.layout>section{min-width:0}.tabs{display:flex;width:100%;min-width:0;gap:8px;margin:10px 0}.tab{min-width:0;max-width:100%;flex:1 1 0;white-space:normal;overflow-wrap:anywhere;border:1px solid #35516e;background:#132c47;color:white;border-radius:15px;padding:13px 8px;font-weight:800;font-size:15px}.tab.active{background:#1c5670;border-color:var(--cyan);box-shadow:0 0 0 2px #5ee7f533}
 .panel{background:#10243b;border:1px solid #294661;border-radius:20px;padding:14px;margin:10px 0}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.small{font-size:12px;color:#b8cce2}.select{width:100%;background:#071a2d;color:white;border:1px solid #42617f;border-radius:12px;padding:12px;font-size:15px;margin-top:7px}
 button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:white;border-radius:12px;padding:11px 12px;font-weight:700}.action.primary{background:#087d91;border-color:#5ee7f5}.action:active,.tab:active{transform:scale(.98)}
-#arbox{position:relative;width:100%;min-width:0;max-width:100%;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#123e63 0,#06172b 58%,#020914 100%);min-height:230px;aspect-ratio:4/3;border:1px solid #34516d}#arbox a-scene{position:absolute!important;inset:0;width:100%!important;height:100%!important;opacity:0;pointer-events:none}#arbox.camera-live a-scene{opacity:1;pointer-events:auto}#arbox canvas{max-width:100%!important} .ar-preview{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:16px;pointer-events:none}.ar-preview .planet{width:min(34vw,145px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 32% 28%,#b9f4ff 0 4%,#328fc8 18%,#12609d 47%,#06264d 76%);box-shadow:inset -16px -12px 24px #001326aa,0 0 28px #49c8ff55;position:relative;animation:float 4s ease-in-out infinite}.ar-preview .planet:before{content:"";position:absolute;inset:20% 8%;border-radius:50%;background:repeating-linear-gradient(165deg,transparent 0 13px,#5acb9b99 14px 22px,transparent 23px 35px);transform:rotate(-18deg);filter:blur(1px)}.ar-preview strong{font-size:14px}.ar-preview span{font-size:12px;color:#bfd5ea;max-width:280px}@keyframes float{50%{transform:translateY(-8px)}}
-#arbox a-scene{width:100%;height:100%} #arbox .hint{position:absolute;z-index:3;left:10px;right:10px;bottom:10px;text-align:center;background:#071426cc;padding:9px;border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none}
+#arbox{position:relative;width:100%;min-width:0;max-width:100%;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#123e63 0,#06172b 58%,#020914 100%);min-height:230px;aspect-ratio:4/3;border:1px solid #34516d}
+/* ARREGLO CLAVE: Forzar a la escena y al video a quedarse dentro de la caja */
+#arbox a-scene{position:absolute!important;inset:0;width:100%!important;height:100%!important;opacity:0;pointer-events:none;z-index:1}
+#arbox.camera-live a-scene{opacity:1;pointer-events:auto}
+#arbox video{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:100%!important;object-fit:cover!important;z-index:-1!important}
+#arbox canvas{max-width:100%!important} .ar-preview{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:16px;pointer-events:none;z-index:0}.ar-preview .planet{width:min(34vw,145px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 32% 28%,#b9f4ff 0 4%,#328fc8 18%,#12609d 47%,#06264d 76%);box-shadow:inset -16px -12px 24px #001326aa,0 0 28px #49c8ff55;position:relative;animation:float 4s ease-in-out infinite}.ar-preview .planet:before{content:"";position:absolute;inset:20% 8%;border-radius:50%;background:repeating-linear-gradient(165deg,transparent 0 13px,#5acb9b99 14px 22px,transparent 23px 35px);transform:rotate(-18deg);filter:blur(1px)}.ar-preview strong{font-size:14px}.ar-preview span{font-size:12px;color:#bfd5ea;max-width:280px}@keyframes float{50%{transform:translateY(-8px)}}
+#arbox .hint{position:absolute;z-index:3;left:10px;right:10px;bottom:10px;text-align:center;background:#071426cc;padding:9px;border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none}
 .info h2{margin:0 0 6px;font-size:21px}.info p{margin:5px 0;color:#d1e1f2;line-height:1.45}.fact{color:var(--gold)!important;font-weight:700}
 .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.controls button{min-height:46px}.scale{display:flex;gap:10px;align-items:center;margin-top:10px}.scale input{width:100%;accent-color:var(--cyan)}
 .hidden{display:none!important}.card{background:#0a1b2d;border:1px dashed #55718c;border-radius:14px;padding:12px;text-align:center}.card img{width:min(100%,240px);height:auto;background:white;border-radius:8px;padding:8px}.foot{font-size:11px;color:#9fb4ca;line-height:1.5;margin:12px 2px}
@@ -44,7 +49,6 @@ header p { font-size:clamp(11px,3.4vw,14px) !important; }
 .ar-preview { display:flex; }
 #arbox.camera-live .ar-preview { display:none !important; }
 @media(max-width:819px){
-  /* Aprovechar el alto disponible del teléfono sin provocar desbordamiento lateral */
   #arbox{height:clamp(280px,42dvh,460px)!important;min-height:280px!important;max-height:460px!important;aspect-ratio:auto!important}
   .ar-preview .planet{width:clamp(150px,42vw,210px)!important}
   .layout>section{display:flex;flex-direction:column;gap:8px}
@@ -127,13 +131,13 @@ header p { font-size:clamp(11px,3.4vw,14px) !important; }
       <div class="panel card">
         <strong>🖨️ Tarjetas HIRO para imprimir</strong>
         <p class="small">Genera e imprime tarjetas para los planetas y animales. Todas usan el marcador HIRO; elige el objeto desde la aplicación.</p>
-        <img alt="Marcador HIRO para realidad aumentada" src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/examples/marker-training/examples/hiro.png" onerror="this.style.display='none';document.getElementById('markerFallback').classList.remove('hidden')">
+        <img alt="Marcador HIRO para realidad aumentada" src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/data/images/hiro.png" onerror="this.style.display='none';document.getElementById('markerFallback').classList.remove('hidden')">
         <p id="markerFallback" class="small hidden">Busca “AR.js Hiro marker” e imprime la imagen completa en blanco y negro.</p>
-        <button class="action primary" id="printCardsBtn" style="display:inline-block;margin-top:8px">🖨️ Generar todas las tarjetas</button><a class="action" style="display:inline-block;text-decoration:none;margin:8px 0 0 5px" href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/examples/marker-training/examples/hiro.png" target="_blank" rel="noopener">Ver HIRO original ↗</a>
+        <button class="action primary" id="printCardsBtn" style="display:inline-block;margin-top:8px">🖨️ Generar todas las tarjetas</button>
       </div>
     </section>
   </div>
-  <p class="foot">Esta es una primera versión experimental. Requiere conexión a internet, navegador compatible y abrirse mediante HTTPS (por ejemplo, GitHub Pages). La cámara no funciona al abrir el archivo desde content://; publícalo en HTTPS (por ejemplo, GitHub Pages). El tamaño indicado es aproximado y depende de la impresión y la distancia de cámara.</p>
+  <p class="foot">Esta es una primera versión experimental. Requiere conexión a internet, navegador compatible y abrirse mediante HTTPS (por ejemplo, GitHub Pages). La cámara no funciona al abrir el archivo desde content://; publícalo en HTTPS. El tamaño indicado es aproximado y depende de la impresión y la distancia de cámara.</p>
 </main>
 <script>
 const planets=[
@@ -176,86 +180,4 @@ function makeAnimal(id,color){
   [[-.2,.08,.28],[-.2,.08,-.28],[.18,.08,.28],[.18,.08,-.28]].forEach(p=>el('a-sphere',{radius:'.11',scale:'1 .45 1',position:p.join(' '),color:'#69a879'}));
  } else if(id==='octopus'){
   el('a-sphere',{radius:'.25',color:c,position:'0 .1 0'});
-  for(let i=0;i<8;i++){let a=i*Math.PI/4;let x=Math.cos(a)*.32,z=Math.sin(a)*.32;el('a-cylinder',{radius:'.035',height:'.52',color:c,position:`${x} -.18 ${z}`,rotation:`${Math.sin(a)*35} 0 ${Math.cos(a)*35}`});}
-  el('a-sphere',{radius:'.035',color:'#fff',position:'.1 .15 .19'});el('a-sphere',{radius:'.035',color:'#fff',position:'-.1 .15 .19'});
- } else {
-  el('a-sphere',{radius:'.3',scale:'1 .65 1',color:c,opacity:'.82',transparent:true});
-  for(let i=0;i<7;i++){let a=i*Math.PI*2/7;el('a-cylinder',{radius:'.012',height:'.48',color:c,position:`${Math.cos(a)*.16} -.36 ${Math.sin(a)*.16}`,rotation:`${Math.cos(a)*24} 0 ${Math.sin(a)*24}`});}
- }
-}
-function renderModel(){
- clearExtra();sphere.setAttribute('visible',mode==='space');
- if(mode==='space'){
-  sphere.setAttribute('radius','.48');sphere.setAttribute('material',`color:${current.color}; roughness:.95; ${current.tex?'src:'+current.tex+';':''}`);
-  if(current.id==='saturn')makeSaturn();
-  if(current.id==='uranus'||current.id==='neptune')el('a-torus',{radius:'.58',radiusTubular:'.012',color:'#b9e9ee',rotation:'80 15 20'});
- }else{makeAnimal(current.id,current.color);}
- const label=root.querySelector('[text]');label.setAttribute('text',`value:${current.title}; align:center; color:#ffffff; width:3; font:mozillavr`);
- document.getElementById('objectName').textContent=current.name;
- document.getElementById('description').textContent=current.desc;
- document.getElementById('fact').textContent=current.fact;
- const pt=document.getElementById('previewTitle'); if(pt) pt.textContent=current.name+' en 3D';
- const pp=document.getElementById('previewPlanet'); if(pp){pp.style.background=`radial-gradient(circle at 32% 28%, #ffffff 0 3%, ${current.color} 25%, #06172b 100%)`;}
-}
-function setMode(next){
- mode=next;document.getElementById('spaceTab').classList.toggle('active',mode==='space');document.getElementById('seaTab').classList.toggle('active',mode==='sea');
- document.getElementById('modeTitle').textContent=mode==='space'?'Explora el sistema solar':'Descubre los animales marinos';
- const list=mode==='space'?planets:sea;select.innerHTML='';list.forEach((o,i)=>{let op=document.createElement('option');op.value=i;op.textContent=o.name;select.appendChild(op)});
- current=list[0];renderModel();
-}
-document.getElementById('spaceTab').onclick=()=>setMode('space');document.getElementById('seaTab').onclick=()=>setMode('sea');
-select.onchange=()=>{current=(mode==='space'?planets:sea)[Number(select.value)];renderModel()};
-document.getElementById('rotateBtn').onclick=()=>{rotating=!rotating;document.getElementById('rotateBtn').textContent=rotating?'⏸ Pausar giro':'▶ Reanudar giro'};
-document.getElementById('voiceBtn').onclick=()=>{if(!('speechSynthesis'in window)){alert('Tu navegador no admite lectura en voz alta.');return}speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(current.voice);u.lang='es-MX';u.rate=.88;speechSynthesis.speak(u)};
-function applySize(){root.setAttribute('scale',`${size} ${size} ${size}`);document.getElementById('sizeRange').value=size;document.getElementById('sizeValue').textContent=Math.round(size*100)+' cm aprox.'}
-document.getElementById('plusBtn').onclick=()=>{size=Math.min(.32,+(size+.02).toFixed(2));applySize()};
-document.getElementById('minusBtn').onclick=()=>{size=Math.max(.10,+(size-.02).toFixed(2));applySize()};
-document.getElementById('sizeRange').oninput=e=>{size=Number(e.target.value);applySize()};
-let last=0;function animate(t){requestAnimationFrame(animate);if(rotating&&t-last>30){root.object3D.rotation.y+=.006;last=t}}requestAnimationFrame(animate);
-document.getElementById('cameraBtn').addEventListener('click',async()=>{
- const hint=document.getElementById('cameraHint');
- const preview=document.getElementById('previewMessage');
- if(!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-   hint.textContent='No se puede abrir la cámara desde content://. Necesitas abrir esta página desde una dirección HTTPS.';
-   preview.textContent='La demostración 3D funciona aquí; la cámara RA requiere publicar la aplicación en HTTPS.';
-   return;
- }
- try{
-   hint.textContent='Solicitando permiso para usar la cámara trasera…';
-   const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-   stream.getTracks().forEach(track=>track.stop());
-   sessionStorage.setItem('exploradores_camera_ok','1');
-   document.getElementById('arbox').classList.add('camera-live');
-   document.getElementById('arPreview').style.display='none';
-   hint.textContent='Permiso concedido. Si no aparece la imagen, recarga la página y vuelve a activar la cámara.';
-   document.getElementById('cameraBtn').textContent='📷 Cámara habilitada';
- }catch(err){
-   hint.textContent=err.name==='NotAllowedError'?'Permiso denegado. En Chrome: candado o ajustes del sitio > Permisos > Cámara > Permitir.':'No se pudo abrir la cámara. Comprueba que Chrome tenga permiso y que otra aplicación no la esté usando.';
- }
-});
-if(sessionStorage.getItem('exploradores_camera_ok')==='1'){
- document.getElementById('arbox').classList.add('camera-live');
- document.getElementById('arPreview').style.display='none';
- document.getElementById('cameraHint').textContent='Cámara habilitada. Apunta al marcador HIRO.';
- document.getElementById('cameraBtn').textContent='📷 Cámara habilitada';
-}
-document.getElementById('fitBtn').addEventListener('click',async()=>{
- document.body.classList.toggle('fit-mode');
- const b=document.getElementById('fitBtn');
- if(!document.fullscreenElement){try{await document.documentElement.requestFullscreen();b.textContent='⤢ Salir de pantalla completa';}catch(e){b.textContent=document.body.classList.contains('fit-mode')?'⛶ Vista compacta activada':'⛶ Ajustar pantalla';}}
- else{try{await document.exitFullscreen();}catch(e){}}
-});
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement){document.body.classList.remove('fit-mode');document.getElementById('fitBtn').textContent='⛶ Ajustar pantalla';}});
-document.getElementById('printCardsBtn').addEventListener('click',()=>{
- const items=[...planets,...sea];const w=window.open('','_blank');
- if(!w){alert('Permite las ventanas emergentes para generar las tarjetas.');return;}
- const cards=items.map((o,i)=>`<article class="card"><div class="tag">EXPLORADORES DEL UNIVERSO</div><h2>${o.name}</h2><img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/examples/marker-training/examples/hiro.png" alt="Marcador HIRO"><p>Apunta la cámara a esta tarjeta y selecciona <b>${o.name.replace(/^\S+\s/,'')}</b> en la aplicación.</p><small>Marcador HIRO · ${i+1} de ${items.length}</small></article>`).join('');
- w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tarjetas HIRO</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:12mm;color:#111}.tools{text-align:center;margin-bottom:12px}.tools button{padding:12px 22px;font-size:16px}.sheet{display:grid;grid-template-columns:1fr 1fr;gap:8mm}.card{border:1.5px dashed #555;border-radius:8px;padding:6mm;text-align:center;break-inside:avoid;page-break-inside:avoid}.card h2{font-size:17pt;margin:4mm 0}.card img{display:block;width:55mm;height:55mm;object-fit:contain;margin:0 auto}.card p{font-size:9pt;line-height:1.35}.tag{font-size:8pt;letter-spacing:1px;font-weight:bold}.card small{font-size:8pt;color:#555}@media print{.tools{display:none}body{padding:0}.sheet{gap:5mm}.card{border:1px dashed #777}}</style></head><body><div class="tools"><button onclick="window.print()">Imprimir / Guardar como PDF</button><p>Imprime al 100%, en blanco y negro, sin recortar el marcador.</p></div><main class="sheet">${cards}</main></body></html>`);
- w.document.close();
-});
-document.getElementById('hiroMarker').addEventListener('markerFound',()=>document.getElementById('cameraHint').textContent='¡Lo encontraste! Cambia de planeta o animal y explora 🌟');
-document.getElementById('hiroMarker').addEventListener('markerLost',()=>document.getElementById('cameraHint').textContent='Apunta de nuevo a la tarjeta HIRO para ver el objeto 3D');
-setMode('space');applySize();
-</script>
-</body>
-</html>
+  for(let i=0;i<8;i++){let a=i*Math.PI/4;let x=Math.cos(a)*
