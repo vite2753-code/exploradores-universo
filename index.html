@@ -264,35 +264,4 @@ document.getElementById('cameraBtn').onclick = function() {
   // TRUCO: AR.js inyecta elementos en el <body>. 
   // Este intervalo los busca, se asegura de que tengan las propiedades correctas y los mete a la caja.
   let intentos = 0;
-  const moverElementosAR = setInterval(() => {
-    intentos++;
-    const video = document.querySelector('video');
-    const canvas = document.querySelector('canvas.a-canvas') || document.querySelector('canvas');
-    
-    if (video) {
-      // Forzar que no se abra en pantalla completa en iOS
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
-      video.setAttribute('muted', '');
-      if (!box.contains(video)) box.appendChild(video);
-    }
-    
-    if (canvas) {
-      if (!box.contains(canvas)) box.appendChild(canvas);
-    }
-    
-    // Si ya pasaron 3 segundos (6 intentos), dejamos de buscar para no consumir batería
-    if (intentos > 6) clearInterval(moverElementosAR);
-  }, 500); 
-};
-
-let lastTime = performance.now();
-function animate(time) {
-  if (rotating) { const dt = time - lastTime; root.object3D.rotation.y += dt * 0.0005; }
-  lastTime = time;
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-fillSelect();
-</script>
-</body></html>
+  cons
