@@ -6,11 +6,13 @@
 <title>Exploradores del Universo</title>
 <style>
 :root{--bg:#071426;--panel:#10243b;--cyan:#5ee7f5;--gold:#ffd36e;--white:#f4f8ff}
-*{box-sizing:border-box} html,body{width:100%;max-width:100%;overflow-x:hidden;margin:0;padding:0}
-body{background:linear-gradient(160deg,#071426,#102b49 65%,#071426);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,sans-serif;position:relative}
+*{box-sizing:border-box; margin:0; padding:0;} 
+html, body { width:100vw; max-width:100vw; overflow-x:hidden; position:relative; }
+body{background:linear-gradient(160deg,#071426,#102b49 65%,#071426);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,sans-serif;}
+
 header{padding:12px 16px 7px;text-align:center} header h1{font-size:24px;margin:0 0 5px} header p{margin:0;color:#b8cce2;font-size:13px}
-.wrap{width:100%;max-width:900px;min-width:0;margin:0 auto;padding:10px 14px 30px;overflow-x:clip}
-.layout{width:100%;min-width:0}.layout>section{min-width:0}
+.wrap{width:100%;max-width:900px;margin:0 auto;padding:10px 14px 30px;}
+.layout{width:100%;}.layout>section{min-width:0;}
 .tabs{display:flex;width:100%;gap:8px;margin:10px 0}
 .tab{min-width:0;flex:1;border:1px solid #35516e;background:#132c47;color:white;border-radius:15px;padding:13px 8px;font-weight:800;font-size:15px;cursor:pointer}
 .tab.active{background:#1c5670;border-color:var(--cyan);box-shadow:0 0 0 2px #5ee7f533}
@@ -21,14 +23,22 @@ header{padding:12px 16px 7px;text-align:center} header h1{font-size:24px;margin:
 button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:white;border-radius:12px;padding:11px 12px;font-weight:700}
 .action.primary{background:#087d91;border-color:#5ee7f5}.action:active,.tab:active{transform:scale(.98)}
 
-/* CONTENEDOR AR */
-#arbox{position:relative;width:100%;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#123e63 0,#06172b 58%,#020914 100%);min-height:280px;aspect-ratio:4/3;border:1px solid #34516d;z-index:1}
+/* CONTENEDOR AR TOTALMENTE BLOQUEADO */
+#arbox{
+  position:relative; width:100%; max-width:100vw; border-radius:18px; overflow:hidden;
+  background:radial-gradient(circle at 50% 45%,#123e63 0,#06172b 58%,#020914 100%);
+  height: clamp(280px, 45dvh, 500px); border:1px solid #34516d; z-index:1;
+}
 
-/* FORZAR A LA ESCENA, VIDEO Y CANVAS A QUEDARSE DENTRO */
-#arbox a-scene { position:absolute !important; inset:0; width:100% !important; height:100% !important; opacity:0; pointer-events:none; z-index:1; }
-#arbox.camera-live a-scene { opacity:1; pointer-events:auto; }
-#arbox video { position:absolute !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important; object-fit:cover !important; z-index:0 !important; }
-#arbox canvas { position:absolute !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important; z-index:1 !important; }
+/* FORZAR A TODOS LOS ELEMENTOS DE AR A QUEDARSE DENTRO Y DEL TAMAÑO CORRECTO */
+#arbox a-scene, #arbox canvas, #arbox video, #arbox .a-canvas {
+  position: absolute !important; top: 0 !important; left: 0 !important;
+  width: 100% !important; height: 100% !important; max-width: 100vw !important;
+  object-fit: cover !important; z-index: 1;
+}
+#arbox a-scene { opacity: 0; pointer-events: none; } /* Oculto hasta que se active */
+#arbox.camera-live a-scene { opacity: 1; pointer-events: auto; }
+#arbox video { z-index: 0 !important; } /* El video atrás, el canvas 3D adelante */
 
 .ar-preview{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:16px;pointer-events:none;z-index:2}
 .ar-preview .planet{width:min(34vw,145px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 32% 28%,#b9f4ff 0 4%,#328fc8 18%,#12609d 47%,#06264d 76%);box-shadow:inset -16px -12px 24px #001326aa,0 0 28px #49c8ff55;position:relative;animation:float 4s ease-in-out infinite}
@@ -36,12 +46,12 @@ button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:
 .ar-preview strong{font-size:14px}.ar-preview span{font-size:12px;color:#bfd5ea;max-width:280px}
 @keyframes float{50%{transform:translateY(-8px)}}
 #arbox .hint{position:absolute;z-index:3;left:10px;right:10px;bottom:10px;text-align:center;background:#071426cc;padding:9px;border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none}
-#arbox.camera-live .ar-preview, #arbox.camera-live .hint { display:none !important; }
+#arbox.camera-live .ar-preview, #arbox.camera-live .hint { display: none !important; }
 
 .info h2{margin:0 0 6px;font-size:21px}.info p{margin:5px 0;color:#d1e1f2;line-height:1.45}.fact{color:var(--gold)!important;font-weight:700}
 .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.controls button{min-height:46px}
 .scale{display:flex;gap:10px;align-items:center;margin-top:10px}.scale input{width:100%;accent-color:var(--cyan)}
-.hidden{display:none!important}.card{background:#0a1b2d;border:1px dashed #55718c;border-radius:14px;padding:12px;text-align:center}.card img{width:min(100%,240px);height:auto;background:white;border-radius:8px;padding:8px}
+.card{background:#0a1b2d;border:1px dashed #55718c;border-radius:14px;padding:12px;text-align:center}.card img{width:min(100%,240px);height:auto;background:white;border-radius:8px;padding:8px}
 .foot{font-size:11px;color:#9fb4ca;line-height:1.5;margin:12px 2px}
 
 .toptools{display:flex;width:100%;max-width:900px;gap:8px;justify-content:center;flex-wrap:nowrap;margin:8px auto;padding:0 10px}
@@ -49,17 +59,15 @@ button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:
 
 @media(max-width:819px){
   .layout{display:block}
-  #arbox{height:clamp(280px,42dvh,460px)!important;min-height:280px!important;max-height:460px!important;aspect-ratio:auto!important}
-  .ar-preview .planet{width:clamp(150px,42vw,210px)!important}
   .layout>section{display:flex;flex-direction:column;gap:8px}
   .controls{grid-template-columns:repeat(2,1fr)}
 }
 @media(min-width:820px){
   .layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:12px;align-items:start}
-  #arbox{min-height:420px}
 }
 </style>
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<!-- Usamos A-Frame 1.2.0 que es la versión compatible y estable con AR.js en móviles -->
+<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
 </head>
 <body>
@@ -76,14 +84,16 @@ button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:
         <div class="row"><div><strong id="modeTitle">Explora el sistema solar</strong><div class="small">Elige qué quieres descubrir</div></div></div>
         <select class="select" id="objectSelect" aria-label="Selecciona un objeto"></select>
       </div>
+      
       <div id="arbox">
         <div class="ar-preview" id="arPreview">
           <div class="planet" id="previewPlanet"></div>
           <strong id="previewTitle">🌎 Tierra en 3D</strong>
-          <span id="previewMessage">Presiona "Activar cámara" y apunta al marcador.</span>
+          <span id="previewMessage">Presiona "Activar cámara" y apunta al marcador HIRO.</span>
         </div>
-        <!-- Agregamos 'embedded' y ajustamos configuración de AR.js -->
-        <a-scene embedded vr-mode-ui="enabled:false" renderer="logarithmicDepthBuffer:true; antialias:true; alpha:true" arjs="sourceType:webcam; debugUIEnabled:false; detectionMode:mono; matrixCodeType:3x3;">
+        
+        <!-- embedded es vital para que respete el contenedor -->
+        <a-scene embedded vr-mode-ui="enabled:false" renderer="logarithmicDepthBuffer:true; antialias:true; alpha:true" arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
           <a-assets>
             <img id="earthTex" crossorigin="anonymous" src="https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg">
             <img id="marsTex" crossorigin="anonymous" src="https://threejs.org/examples/textures/planets/mars_1k_color.jpg">
@@ -105,6 +115,7 @@ button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:
         </a-scene>
         <div class="hint" id="cameraHint">Vista previa. Activa la cámara para iniciar la RA.</div>
       </div>
+      
       <div class="panel">
         <div class="controls">
           <button class="action primary" id="rotateBtn">⏸ Pausar giro</button>
@@ -132,28 +143,28 @@ button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:
       </div>
       <div class="panel card">
         <strong>🖨️ Tarjetas HIRO para imprimir</strong>
-        <p class="small">Genera e imprime tarjetas para los planetas y animales. Todas usan el marcador HIRO; elige el objeto desde la aplicación.</p>
+        <p class="small">Genera e imprime tarjetas para los planetas y animales. Todas usan el marcador HIRO.</p>
         <img alt="Marcador HIRO" src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/data/images/hiro.png" style="max-width:200px; margin-top:10px;">
       </div>
     </section>
   </div>
-  <p class="foot">Esta es una primera versión experimental. Requiere conexión a internet, navegador compatible y abrirse mediante HTTPS (por ejemplo, GitHub Pages).</p>
+  <p class="foot">Esta es una primera versión experimental. Requiere conexión a internet, navegador compatible y abrirse mediante HTTPS.</p>
 </main>
 
 <script>
 // 1. DATOS
 const planets=[
 {id:'earth',name:'🌎 Tierra',title:'TIERRA',desc:'Nuestro hogar: un planeta con océanos, continentes y una atmósfera que hace posible la vida.',fact:'Dato curioso: cerca del 71% de su superficie está cubierta de agua.',tex:'#earthTex',color:'#168bd2',voice:'La Tierra es nuestro hogar. Tiene océanos, continentes y aire para respirar. Es el único planeta donde sabemos que existe vida.'},
-{id:'mars',name:'🔴 Marte',title:'MARTE',desc:'Es conocido como el planeta rojo por el hierro oxidado que hay en su suelo.',fact:'Dato curioso: tiene el volcán más grande conocido del sistema solar, el Monte Olimpo.',tex:'#marsTex',color:'#b85b37',voice:'Marte es el planeta rojo. Tiene montañas enormes y robots exploradores que estudian su superficie.'},
+{id:'mars',name:'🔴 Marte',title:'MARTE',desc:'Es conocido como el planeta rojo por el hierro oxidado que hay en su suelo.',fact:'Dato curioso: tiene el volcán más grande conocido del sistema solar.',tex:'#marsTex',color:'#b85b37',voice:'Marte es el planeta rojo. Tiene montañas enormes y robots exploradores que estudian su superficie.'},
 {id:'jupiter',name:'🟠 Júpiter',title:'JÚPITER',desc:'Es el planeta más grande del sistema solar y está formado principalmente por gases.',fact:'Dato curioso: su Gran Mancha Roja es una tormenta gigantesca.',tex:'#jupiterTex',color:'#c69b70',voice:'Júpiter es el planeta más grande. Tiene muchas lunas y una enorme tormenta llamada la Gran Mancha Roja.'},
-{id:'saturn',name:'🪐 Saturno',title:'SATURNO',desc:'Un gigante gaseoso famoso por sus hermosos anillos hechos de hielo y roca.',fact:'Dato curioso: sus anillos son enormes, pero muy delgados en comparación con su extensión.',tex:null,color:'#d8bd82',voice:'Saturno es famoso por sus anillos. Están hechos de pedacitos de hielo y roca.'},
+{id:'saturn',name:'🪐 Saturno',title:'SATURNO',desc:'Un gigante gaseoso famoso por sus hermosos anillos hechos de hielo y roca.',fact:'Dato curioso: sus anillos son enormes, pero muy delgados.',tex:null,color:'#d8bd82',voice:'Saturno es famoso por sus anillos. Están hechos de pedacitos de hielo y roca.'},
 {id:'venus',name:'🟡 Venus',title:'VENUS',desc:'Un planeta rocoso cubierto por nubes espesas. Su atmósfera atrapa muchísimo calor.',fact:'Dato curioso: Venus es el planeta más caliente del sistema solar.',tex:'#venusTex',color:'#d6a45b',voice:'Venus es muy caliente. Tiene nubes espesas y una atmósfera que atrapa el calor.'},
-{id:'mercury',name:'⚪ Mercurio',title:'MERCURIO',desc:'Es el planeta más cercano al Sol y también el más pequeño de los ocho planetas.',fact:'Dato curioso: aunque está cerca del Sol, sus noches pueden ser extremadamente frías.',tex:'#moonTex',color:'#aaa9a5',voice:'Mercurio es el planeta más cercano al Sol y es pequeño y rocoso.'},
+{id:'mercury',name:'⚪ Mercurio',title:'MERCURIO',desc:'Es el planeta más cercano al Sol y también el más pequeño de los ocho planetas.',fact:'Dato curioso: aunque está cerca del Sol, sus noches son extremadamente frías.',tex:'#moonTex',color:'#aaa9a5',voice:'Mercurio es el planeta más cercano al Sol y es pequeño y rocoso.'},
 {id:'uranus',name:'🩵 Urano',title:'URANO',desc:'Un gigante helado de color azul verdoso que gira muy inclinado.',fact:'Dato curioso: parece rodar de lado mientras viaja alrededor del Sol.',tex:null,color:'#77d4d5',voice:'Urano es un planeta gigante y frío. Gira muy inclinado, casi de lado.'},
 {id:'neptune',name:'🔵 Neptuno',title:'NEPTUNO',desc:'Un gigante helado, azul y muy lejano al Sol.',fact:'Dato curioso: tiene vientos extremadamente rápidos.',tex:null,color:'#2864c7',voice:'Neptuno es un planeta azul, muy lejano y con vientos muy rápidos.'}
 ];
 const sea=[
-{id:'dolphin',name:'🐬 Delfín',title:'DELFÍN',desc:'Mamífero marino inteligente que respira aire por un orificio en la parte superior de su cabeza.',fact:'Dato curioso: los delfines usan sonidos y ecos para orientarse y encontrar alimento.',color:'#8abbd1',voice:'El delfín es un mamífero marino. Respira aire y utiliza sonidos para orientarse.'},
+{id:'dolphin',name:'🐬 Delfín',title:'DELFÍN',desc:'Mamífero marino inteligente que respira aire por un orificio en la parte superior de su cabeza.',fact:'Dato curioso: los delfines usan sonidos y ecos para orientarse.',color:'#8abbd1',voice:'El delfín es un mamífero marino. Respira aire y utiliza sonidos para orientarse.'},
 {id:'shark',name:'🦈 Tiburón',title:'TIBURÓN',desc:'Pez que respira bajo el agua mediante branquias. Existen muchas especies de tiburones.',fact:'Dato curioso: el tiburón ballena es el pez más grande del mundo.',color:'#8299aa',voice:'Los tiburones son peces. Hay muchas especies y no todos son grandes depredadores.'},
 {id:'whale',name:'🐋 Ballena azul',title:'BALLENA AZUL',desc:'El animal más grande conocido que ha vivido en la Tierra.',fact:'Dato curioso: su corazón puede ser del tamaño de un pequeño automóvil.',color:'#477fa9',voice:'La ballena azul es el animal más grande del planeta. Aunque vive en el mar, necesita salir a respirar.'},
 {id:'turtle',name:'🐢 Tortuga marina',title:'TORTUGA MARINA',desc:'Reptil adaptado al océano. Sus aletas le ayudan a nadar largas distancias.',fact:'Dato curioso: algunas tortugas marinas viajan miles de kilómetros.',color:'#65a77a',voice:'La tortuga marina es un reptil. Nada con sus aletas y puede recorrer grandes distancias.'},
@@ -169,7 +180,6 @@ const label=document.getElementById('labelText');
 const orbit=document.getElementById('orbit');
 const select=document.getElementById('objectSelect');
 
-// 2. FUNCIONES 3D
 function clearExtra(){ while(extra.firstChild) extra.removeChild(extra.firstChild); }
 function el(tag,attrs,parent=extra){ const n=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v)); parent.appendChild(n); return n; }
 
@@ -177,7 +187,6 @@ function makeSaturn(){
   el('a-torus',{radius:'0.72',radiusTubular:'0.035',segmentsTubular:'8',segmentsRadial:'64',color:'#e5cf9a',rotation:'25 0 0'});
   el('a-torus',{radius:'0.82',radiusTubular:'0.018',color:'#b99c6d',rotation:'25 0 0'});
 }
-
 function makeAnimal(id,color){
   const c=color;
   if(id==='dolphin'||id==='shark'||id==='whale'){
@@ -186,8 +195,6 @@ function makeAnimal(id,color){
     el('a-cone',{radiusBottom:id==='shark'?.18:.13,radiusTop:'0',height:'.34',color:c,position:`-${len*.65} .03 0`,rotation:'0 0 90'});
     el('a-cone',{radiusBottom:'.12',radiusTop:'0',height:'.28',color:c,position:`${len*.2} ${rad*.9} 0`,rotation:'0 0 0'});
     el('a-sphere',{radius:'.035',color:'#111',position:`${len*.45} .06 .13`});
-    if(id==='shark') { el('a-cone',{radiusBottom:'.13',radiusTop:'0',height:'.25',color:'#d7e0e6',position:'0 -.12 0',rotation:'180 0 0'}); }
-    if(id==='whale'){ el('a-cone',{radiusBottom:'.1',radiusTop:'0',height:'.18',color:c,position:'.38 .24 0'}); el('a-cone',{radiusBottom:'.09',radiusTop:'0',height:'.16',color:c,position:'.52 .22 .1'}); }
   } else if(id==='turtle'){
     el('a-sphere',{radius:'.32',scale:'1 .48 .8',color:'#92704c'});
     el('a-sphere',{radius:'.16',position:'.32 0 0',color:'#69a879'});
@@ -202,17 +209,13 @@ function makeAnimal(id,color){
   }
 }
 
-// 3. ACTUALIZAR ESCENA
 function updateScene(){
   const list = mode === 'space' ? planets : sea;
   current = list[select.selectedIndex];
-  
-  // Textos UI
   document.getElementById('objectName').textContent = current.name;
   document.getElementById('description').textContent = current.desc;
   document.getElementById('fact').textContent = current.fact;
   label.setAttribute('text', 'value', current.title);
-  
   clearExtra();
   
   if(mode === 'space'){
@@ -227,7 +230,6 @@ function updateScene(){
   }
 }
 
-// Llenar el select
 function fillSelect(){
   select.innerHTML = '';
   const list = mode === 'space' ? planets : sea;
@@ -240,101 +242,57 @@ function fillSelect(){
   updateScene();
 }
 
-// 4. EVENTOS UI
-document.getElementById('spaceTab').onclick = () => {
-  mode = 'space'; 
-  document.getElementById('spaceTab').classList.add('active'); 
-  document.getElementById('seaTab').classList.remove('active');
-  fillSelect();
-};
-document.getElementById('seaTab').onclick = () => {
-  mode = 'sea'; 
-  document.getElementById('seaTab').classList.add('active'); 
-  document.getElementById('spaceTab').classList.remove('active');
-  fillSelect();
-};
+document.getElementById('spaceTab').onclick = () => { mode='space'; document.getElementById('spaceTab').classList.add('active'); document.getElementById('seaTab').classList.remove('active'); fillSelect(); };
+document.getElementById('seaTab').onclick = () => { mode='sea'; document.getElementById('seaTab').classList.add('active'); document.getElementById('spaceTab').classList.remove('active'); fillSelect(); };
 select.onchange = updateScene;
 
-document.getElementById('rotateBtn').onclick = function() {
-  rotating = !rotating;
-  this.textContent = rotating ? '⏸ Pausar giro' : '▶ Reanudar giro';
-};
-
-document.getElementById('voiceBtn').onclick = () => {
-  const msg = new SpeechSynthesisUtterance(current.voice);
-  msg.lang = 'es-MX';
-  window.speechSynthesis.speak(msg);
-};
-
-function updateSize(val) {
-  size = parseFloat(val);
-  root.setAttribute('scale', `${size} ${size} ${size}`);
-  document.getElementById('sizeValue').textContent = Math.round(size * 100) + " cm aprox.";
-  document.getElementById('sizeRange').value = size;
-}
-
+document.getElementById('rotateBtn').onclick = function() { rotating = !rotating; this.textContent = rotating ? '⏸ Pausar giro' : '▶ Reanudar giro'; };
+document.getElementById('voiceBtn').onclick = () => { const msg = new SpeechSynthesisUtterance(current.voice); msg.lang = 'es-MX'; window.speechSynthesis.speak(msg); };
+function updateSize(val) { size = parseFloat(val); root.setAttribute('scale', `${size} ${size} ${size}`); document.getElementById('sizeValue').textContent = Math.round(size * 100) + " cm aprox."; document.getElementById('sizeRange').value = size; }
 document.getElementById('sizeRange').oninput = (e) => updateSize(e.target.value);
 document.getElementById('minusBtn').onclick = () => updateSize(Math.max(0.1, size - 0.02));
 document.getElementById('plusBtn').onclick = () => updateSize(Math.min(0.4, size + 0.02));
+document.getElementById('fitBtn').onclick = () => { document.body.classList.toggle('fit-mode'); };
 
-document.getElementById('fitBtn').onclick = () => {
-  document.body.classList.toggle('fit-mode');
-};
-
-// 5. BOTÓN DE CÁMARA Y TRUCO PARA METER EL VIDEO EN EL CUADRO
+// 5. BOTÓN DE CÁMARA Y TRUCO DEFINITIVO
 document.getElementById('cameraBtn').onclick = function() {
   const box = document.getElementById('arbox');
   box.classList.add('camera-live');
   this.textContent = '📷 Cámara Activa';
   this.classList.remove('primary');
   
-  // TRUCO: AR.js inyecta el video y el canvas en el <body>. 
-  // Los movemos a la fuerza dentro de nuestro recuadro #arbox.
+  // TRUCO: AR.js inyecta elementos en el <body>. 
+  // Este intervalo los busca, se asegura de que tengan las propiedades correctas y los mete a la caja.
+  let intentos = 0;
   const moverElementosAR = setInterval(() => {
+    intentos++;
     const video = document.querySelector('video');
     const canvas = document.querySelector('canvas.a-canvas') || document.querySelector('canvas');
     
-    if (video && !box.contains(video)) {
-      box.appendChild(video);
-      video.style.position = 'absolute';
-      video.style.top = '0';
-      video.style.left = '0';
-      video.style.width = '100%';
-      video.style.height = '100%';
-      video.style.objectFit = 'cover';
-      video.style.zIndex = '0';
-    }
-    if (canvas && !box.contains(canvas)) {
-      box.appendChild(canvas);
-      canvas.style.position = 'absolute';
-      canvas.style.top = '0';
-      canvas.style.left = '0';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.style.zIndex = '1';
+    if (video) {
+      // Forzar que no se abra en pantalla completa en iOS
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.setAttribute('muted', '');
+      if (!box.contains(video)) box.appendChild(video);
     }
     
-    // Si ya se movieron ambos, detenemos el intervalo
-    if (video && canvas && box.contains(video) && box.contains(canvas)) {
-      clearInterval(moverElementosAR);
+    if (canvas) {
+      if (!box.contains(canvas)) box.appendChild(canvas);
     }
-  }, 500); // Revisa cada medio segundo hasta que aparezcan
+    
+    // Si ya pasaron 3 segundos (6 intentos), dejamos de buscar para no consumir batería
+    if (intentos > 6) clearInterval(moverElementosAR);
+  }, 500); 
 };
 
-// Animación de rotación
 let lastTime = performance.now();
 function animate(time) {
-  if (rotating) {
-    const dt = time - lastTime;
-    root.object3D.rotation.y += dt * 0.0005;
-  }
+  if (rotating) { const dt = time - lastTime; root.object3D.rotation.y += dt * 0.0005; }
   lastTime = time;
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
-
-// Inicializar
 fillSelect();
 </script>
-</body>
-</html>
+</body></html>
