@@ -6,57 +6,58 @@
 <title>Exploradores del Universo</title>
 <style>
 :root{--bg:#071426;--panel:#10243b;--cyan:#5ee7f5;--gold:#ffd36e;--white:#f4f8ff}
-*{box-sizing:border-box} html,body{width:100%;max-width:100%;overflow-x:hidden} body{margin:0;background:linear-gradient(160deg,#071426,#102b49 65%,#071426);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+*{box-sizing:border-box} html,body{width:100%;max-width:100%;overflow-x:hidden;margin:0;padding:0}
+body{background:linear-gradient(160deg,#071426,#102b49 65%,#071426);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,sans-serif;position:relative}
 header{padding:12px 16px 7px;text-align:center} header h1{font-size:24px;margin:0 0 5px} header p{margin:0;color:#b8cce2;font-size:13px}
-.wrap{width:100%;max-width:900px;min-width:0;margin:0 auto;padding:10px 14px 30px;overflow-x:clip}.layout{width:100%;min-width:0}.layout>section{min-width:0}.tabs{display:flex;width:100%;min-width:0;gap:8px;margin:10px 0}.tab{min-width:0;max-width:100%;flex:1 1 0;white-space:normal;overflow-wrap:anywhere;border:1px solid #35516e;background:#132c47;color:white;border-radius:15px;padding:13px 8px;font-weight:800;font-size:15px}.tab.active{background:#1c5670;border-color:var(--cyan);box-shadow:0 0 0 2px #5ee7f533}
-.panel{background:#10243b;border:1px solid #294661;border-radius:20px;padding:14px;margin:10px 0}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.small{font-size:12px;color:#b8cce2}.select{width:100%;background:#071a2d;color:white;border:1px solid #42617f;border-radius:12px;padding:12px;font-size:15px;margin-top:7px}
-button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:white;border-radius:12px;padding:11px 12px;font-weight:700}.action.primary{background:#087d91;border-color:#5ee7f5}.action:active,.tab:active{transform:scale(.98)}
-#arbox{position:relative;width:100%;min-width:0;max-width:100%;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#123e63 0,#06172b 58%,#020914 100%);min-height:230px;aspect-ratio:4/3;border:1px solid #34516d}
-/* ARREGLO CLAVE: Forzar a la escena y al video a quedarse dentro de la caja */
-#arbox a-scene{position:absolute!important;inset:0;width:100%!important;height:100%!important;opacity:0;pointer-events:none;z-index:1}
-#arbox.camera-live a-scene{opacity:1;pointer-events:auto}
-#arbox video{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:100%!important;object-fit:cover!important;z-index:-1!important}
-#arbox canvas{max-width:100%!important} .ar-preview{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:16px;pointer-events:none;z-index:0}.ar-preview .planet{width:min(34vw,145px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 32% 28%,#b9f4ff 0 4%,#328fc8 18%,#12609d 47%,#06264d 76%);box-shadow:inset -16px -12px 24px #001326aa,0 0 28px #49c8ff55;position:relative;animation:float 4s ease-in-out infinite}.ar-preview .planet:before{content:"";position:absolute;inset:20% 8%;border-radius:50%;background:repeating-linear-gradient(165deg,transparent 0 13px,#5acb9b99 14px 22px,transparent 23px 35px);transform:rotate(-18deg);filter:blur(1px)}.ar-preview strong{font-size:14px}.ar-preview span{font-size:12px;color:#bfd5ea;max-width:280px}@keyframes float{50%{transform:translateY(-8px)}}
-#arbox .hint{position:absolute;z-index:3;left:10px;right:10px;bottom:10px;text-align:center;background:#071426cc;padding:9px;border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none}
-.info h2{margin:0 0 6px;font-size:21px}.info p{margin:5px 0;color:#d1e1f2;line-height:1.45}.fact{color:var(--gold)!important;font-weight:700}
-.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.controls button{min-height:46px}.scale{display:flex;gap:10px;align-items:center;margin-top:10px}.scale input{width:100%;accent-color:var(--cyan)}
-.hidden{display:none!important}.card{background:#0a1b2d;border:1px dashed #55718c;border-radius:14px;padding:12px;text-align:center}.card img{width:min(100%,240px);height:auto;background:white;border-radius:8px;padding:8px}.foot{font-size:11px;color:#9fb4ca;line-height:1.5;margin:12px 2px}
-.toptools{display:flex;width:100%;max-width:900px;min-width:0;gap:8px;justify-content:center;flex-wrap:nowrap;margin:8px auto;padding:0 10px}.toptools button{flex:1 1 0;min-width:0;max-width:100%;white-space:normal;font-size:clamp(11px,3.2vw,15px);padding:10px 5px}
-body.fit-mode header{padding:5px 10px}body.fit-mode header h1{font-size:18px}body.fit-mode header p{display:none}body.fit-mode .wrap{padding:3px 8px 12px}body.fit-mode .tabs{margin:4px 0}body.fit-mode .tab{padding:8px}body.fit-mode .panel{padding:9px;margin:5px 0}body.fit-mode #arbox{min-height:0;max-height:42vh;aspect-ratio:4/3}body.fit-mode .foot{margin:5px 2px}
-@media(max-width:819px){.layout{display:block}.wrap{padding-left:10px;padding-right:10px}#arbox{min-height:220px;max-height:42vh;aspect-ratio:4/3}.panel{padding:11px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.controls button{min-width:0;font-size:13px;padding:10px 6px}}
-@media (display-mode: standalone){body{min-height:100dvh}}
-@media(min-width:820px){.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:12px;align-items:start}#arbox{min-height:420px}}
+.wrap{width:100%;max-width:900px;min-width:0;margin:0 auto;padding:10px 14px 30px;overflow-x:clip}
+.layout{width:100%;min-width:0}.layout>section{min-width:0}
+.tabs{display:flex;width:100%;gap:8px;margin:10px 0}
+.tab{min-width:0;flex:1;border:1px solid #35516e;background:#132c47;color:white;border-radius:15px;padding:13px 8px;font-weight:800;font-size:15px;cursor:pointer}
+.tab.active{background:#1c5670;border-color:var(--cyan);box-shadow:0 0 0 2px #5ee7f533}
+.panel{background:#10243b;border:1px solid #294661;border-radius:20px;padding:14px;margin:10px 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.small{font-size:12px;color:#b8cce2}
+.select{width:100%;background:#071a2d;color:white;border:1px solid #42617f;border-radius:12px;padding:12px;font-size:15px;margin-top:7px}
+button{cursor:pointer}.action{background:#1b4968;border:1px solid #4a7897;color:white;border-radius:12px;padding:11px 12px;font-weight:700}
+.action.primary{background:#087d91;border-color:#5ee7f5}.action:active,.tab:active{transform:scale(.98)}
 
-/* Correccion robusta para moviles: evita que A-Frame ensanche o desplace el documento */
-html, body { width:100% !important; min-width:0 !important; max-width:100% !important; margin:0 !important; padding:0 !important; overflow-x:hidden !important; }
-body { position:relative !important; left:0 !important; right:0 !important; }
-header, .toptools, .wrap, .tabs, .layout, .layout>section, .panel, #arbox { width:100% !important; min-width:0 !important; max-width:100% !important; }
-header { padding-left:12px !important; padding-right:12px !important; }
-header h1 { font-size:clamp(19px,5.6vw,26px) !important; overflow-wrap:anywhere; }
-header p { font-size:clamp(11px,3.4vw,14px) !important; }
-.toptools { flex-wrap:wrap !important; padding-left:10px !important; padding-right:10px !important; }
-.toptools button { flex:1 1 145px !important; min-width:0 !important; }
-.wrap { padding-left:10px !important; padding-right:10px !important; }
-.tabs { display:flex !important; }
-.tab { flex:1 1 0 !important; min-width:0 !important; padding:11px 5px !important; font-size:clamp(12px,3.5vw,15px) !important; }
-.layout { display:block !important; }
-.layout>section { width:100% !important; }
-.panel { margin-left:0 !important; margin-right:0 !important; }
-#arbox { height:auto !important; min-height:230px !important; aspect-ratio:4/3 !important; }
-#arbox a-scene { display:none !important; }
-#arbox.camera-live a-scene { display:block !important; position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
-#arbox canvas { max-width:100% !important; }
-.ar-preview { display:flex; }
-#arbox.camera-live .ar-preview { display:none !important; }
+/* CONTENEDOR AR */
+#arbox{position:relative;width:100%;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#123e63 0,#06172b 58%,#020914 100%);min-height:280px;aspect-ratio:4/3;border:1px solid #34516d;z-index:1}
+
+/* FORZAR A LA ESCENA, VIDEO Y CANVAS A QUEDARSE DENTRO */
+#arbox a-scene { position:absolute !important; inset:0; width:100% !important; height:100% !important; opacity:0; pointer-events:none; z-index:1; }
+#arbox.camera-live a-scene { opacity:1; pointer-events:auto; }
+#arbox video { position:absolute !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important; object-fit:cover !important; z-index:0 !important; }
+#arbox canvas { position:absolute !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important; z-index:1 !important; }
+
+.ar-preview{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:16px;pointer-events:none;z-index:2}
+.ar-preview .planet{width:min(34vw,145px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 32% 28%,#b9f4ff 0 4%,#328fc8 18%,#12609d 47%,#06264d 76%);box-shadow:inset -16px -12px 24px #001326aa,0 0 28px #49c8ff55;position:relative;animation:float 4s ease-in-out infinite}
+.ar-preview .planet:before{content:"";position:absolute;inset:20% 8%;border-radius:50%;background:repeating-linear-gradient(165deg,transparent 0 13px,#5acb9b99 14px 22px,transparent 23px 35px);transform:rotate(-18deg);filter:blur(1px)}
+.ar-preview strong{font-size:14px}.ar-preview span{font-size:12px;color:#bfd5ea;max-width:280px}
+@keyframes float{50%{transform:translateY(-8px)}}
+#arbox .hint{position:absolute;z-index:3;left:10px;right:10px;bottom:10px;text-align:center;background:#071426cc;padding:9px;border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none}
+#arbox.camera-live .ar-preview, #arbox.camera-live .hint { display:none !important; }
+
+.info h2{margin:0 0 6px;font-size:21px}.info p{margin:5px 0;color:#d1e1f2;line-height:1.45}.fact{color:var(--gold)!important;font-weight:700}
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.controls button{min-height:46px}
+.scale{display:flex;gap:10px;align-items:center;margin-top:10px}.scale input{width:100%;accent-color:var(--cyan)}
+.hidden{display:none!important}.card{background:#0a1b2d;border:1px dashed #55718c;border-radius:14px;padding:12px;text-align:center}.card img{width:min(100%,240px);height:auto;background:white;border-radius:8px;padding:8px}
+.foot{font-size:11px;color:#9fb4ca;line-height:1.5;margin:12px 2px}
+
+.toptools{display:flex;width:100%;max-width:900px;gap:8px;justify-content:center;flex-wrap:nowrap;margin:8px auto;padding:0 10px}
+.toptools button{flex:1;white-space:normal;font-size:clamp(11px,3.2vw,15px);padding:10px 5px}
+
 @media(max-width:819px){
+  .layout{display:block}
   #arbox{height:clamp(280px,42dvh,460px)!important;min-height:280px!important;max-height:460px!important;aspect-ratio:auto!important}
   .ar-preview .planet{width:clamp(150px,42vw,210px)!important}
   .layout>section{display:flex;flex-direction:column;gap:8px}
-  .layout>section .panel{width:100%}
-  .info{margin-top:8px!important}
-  .foot{padding-bottom:24px}
+  .controls{grid-template-columns:repeat(2,1fr)}
 }
-@media(max-width:380px){ .toptools button{flex-basis:130px !important;font-size:12px !important}.controls{grid-template-columns:1fr !important}.controls button{width:100% !important} }
+@media(min-width:820px){
+  .layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:12px;align-items:start}
+  #arbox{min-height:420px}
+}
 </style>
 <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
@@ -79,8 +80,9 @@ header p { font-size:clamp(11px,3.4vw,14px) !important; }
         <div class="ar-preview" id="arPreview">
           <div class="planet" id="previewPlanet"></div>
           <strong id="previewTitle">🌎 Tierra en 3D</strong>
-          <span id="previewMessage">Vista de demostración. Para ver realidad aumentada, publica la aplicación en HTTPS y activa la cámara.</span>
+          <span id="previewMessage">Presiona "Activar cámara" y apunta al marcador.</span>
         </div>
+        <!-- Agregamos 'embedded' y ajustamos configuración de AR.js -->
         <a-scene embedded vr-mode-ui="enabled:false" renderer="logarithmicDepthBuffer:true; antialias:true; alpha:true" arjs="sourceType:webcam; debugUIEnabled:false; detectionMode:mono; matrixCodeType:3x3;">
           <a-assets>
             <img id="earthTex" crossorigin="anonymous" src="https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg">
@@ -93,7 +95,7 @@ header p { font-size:clamp(11px,3.4vw,14px) !important; }
             <a-entity id="modelRoot" position="0 0.10 0" rotation="-90 0 0" scale="0.18 0.18 0.18">
               <a-sphere id="mainSphere" radius="0.48" segments-width="48" segments-height="32" material="color:#168bd2; roughness:1"></a-sphere>
               <a-entity id="extraModel"></a-entity>
-              <a-entity position="0 -0.68 0" text="value:TIERRA; align:center; color:#ffffff; width:3; font:mozillavr"></a-entity>
+              <a-entity id="labelText" position="0 -0.68 0" text="value:TIERRA; align:center; color:#ffffff; width:3; font:mozillavr"></a-entity>
               <a-entity id="orbit" rotation="90 0 0">
                 <a-ring radius-inner="0.68" radius-outer="0.69" color="#9edcff" opacity=".65" rotation="90 0 0"></a-ring>
               </a-entity>
@@ -101,7 +103,7 @@ header p { font-size:clamp(11px,3.4vw,14px) !important; }
           </a-marker>
           <a-entity camera></a-entity>
         </a-scene>
-        <div class="hint" id="cameraHint">Vista previa. Para RA, publica la app en HTTPS y activa la cámara.</div>
+        <div class="hint" id="cameraHint">Vista previa. Activa la cámara para iniciar la RA.</div>
       </div>
       <div class="panel">
         <div class="controls">
@@ -110,7 +112,7 @@ header p { font-size:clamp(11px,3.4vw,14px) !important; }
           <button class="action" id="minusBtn">➖ Más pequeño</button>
           <button class="action" id="plusBtn">➕ Más grande</button>
         </div>
-        <div class="scale"><span class="small">Tamaño</span><input id="sizeRange" type="range" min=".10" max=".32" step=".01" value=".18"><span id="sizeValue" class="small">18 cm aprox.</span></div>
+        <div class="scale"><span class="small">Tamaño</span><input id="sizeRange" type="range" min=".10" max=".40" step=".01" value=".18"><span id="sizeValue" class="small">18 cm aprox.</span></div>
       </div>
     </section>
     <section>
@@ -131,15 +133,15 @@ header p { font-size:clamp(11px,3.4vw,14px) !important; }
       <div class="panel card">
         <strong>🖨️ Tarjetas HIRO para imprimir</strong>
         <p class="small">Genera e imprime tarjetas para los planetas y animales. Todas usan el marcador HIRO; elige el objeto desde la aplicación.</p>
-        <img alt="Marcador HIRO para realidad aumentada" src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/data/images/hiro.png" onerror="this.style.display='none';document.getElementById('markerFallback').classList.remove('hidden')">
-        <p id="markerFallback" class="small hidden">Busca “AR.js Hiro marker” e imprime la imagen completa en blanco y negro.</p>
-        <button class="action primary" id="printCardsBtn" style="display:inline-block;margin-top:8px">🖨️ Generar todas las tarjetas</button>
+        <img alt="Marcador HIRO" src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/data/images/hiro.png" style="max-width:200px; margin-top:10px;">
       </div>
     </section>
   </div>
-  <p class="foot">Esta es una primera versión experimental. Requiere conexión a internet, navegador compatible y abrirse mediante HTTPS (por ejemplo, GitHub Pages). La cámara no funciona al abrir el archivo desde content://; publícalo en HTTPS. El tamaño indicado es aproximado y depende de la impresión y la distancia de cámara.</p>
+  <p class="foot">Esta es una primera versión experimental. Requiere conexión a internet, navegador compatible y abrirse mediante HTTPS (por ejemplo, GitHub Pages).</p>
 </main>
+
 <script>
+// 1. DATOS
 const planets=[
 {id:'earth',name:'🌎 Tierra',title:'TIERRA',desc:'Nuestro hogar: un planeta con océanos, continentes y una atmósfera que hace posible la vida.',fact:'Dato curioso: cerca del 71% de su superficie está cubierta de agua.',tex:'#earthTex',color:'#168bd2',voice:'La Tierra es nuestro hogar. Tiene océanos, continentes y aire para respirar. Es el único planeta donde sabemos que existe vida.'},
 {id:'mars',name:'🔴 Marte',title:'MARTE',desc:'Es conocido como el planeta rojo por el hierro oxidado que hay en su suelo.',fact:'Dato curioso: tiene el volcán más grande conocido del sistema solar, el Monte Olimpo.',tex:'#marsTex',color:'#b85b37',voice:'Marte es el planeta rojo. Tiene montañas enormes y robots exploradores que estudian su superficie.'},
@@ -152,32 +154,187 @@ const planets=[
 ];
 const sea=[
 {id:'dolphin',name:'🐬 Delfín',title:'DELFÍN',desc:'Mamífero marino inteligente que respira aire por un orificio en la parte superior de su cabeza.',fact:'Dato curioso: los delfines usan sonidos y ecos para orientarse y encontrar alimento.',color:'#8abbd1',voice:'El delfín es un mamífero marino. Respira aire y utiliza sonidos para orientarse.'},
-{id:'shark',name:'🦈 Tiburón',title:'TIBURÓN',desc:'Pez que respira bajo el agua mediante branquias. Existen muchas especies de tiburones.',fact:'Dato curioso: el tiburón ballena es el pez más grande del mundo y se alimenta filtrando pequeños organismos.',color:'#8299aa',voice:'Los tiburones son peces. Hay muchas especies y no todos son grandes depredadores.'},
-{id:'whale',name:'🐋 Ballena azul',title:'BALLENA AZUL',desc:'El animal más grande conocido que ha vivido en la Tierra. Es un mamífero y respira aire.',fact:'Dato curioso: su corazón puede ser del tamaño de un pequeño automóvil.',color:'#477fa9',voice:'La ballena azul es el animal más grande del planeta. Aunque vive en el mar, necesita salir a respirar.'},
+{id:'shark',name:'🦈 Tiburón',title:'TIBURÓN',desc:'Pez que respira bajo el agua mediante branquias. Existen muchas especies de tiburones.',fact:'Dato curioso: el tiburón ballena es el pez más grande del mundo.',color:'#8299aa',voice:'Los tiburones son peces. Hay muchas especies y no todos son grandes depredadores.'},
+{id:'whale',name:'🐋 Ballena azul',title:'BALLENA AZUL',desc:'El animal más grande conocido que ha vivido en la Tierra.',fact:'Dato curioso: su corazón puede ser del tamaño de un pequeño automóvil.',color:'#477fa9',voice:'La ballena azul es el animal más grande del planeta. Aunque vive en el mar, necesita salir a respirar.'},
 {id:'turtle',name:'🐢 Tortuga marina',title:'TORTUGA MARINA',desc:'Reptil adaptado al océano. Sus aletas le ayudan a nadar largas distancias.',fact:'Dato curioso: algunas tortugas marinas viajan miles de kilómetros.',color:'#65a77a',voice:'La tortuga marina es un reptil. Nada con sus aletas y puede recorrer grandes distancias.'},
 {id:'octopus',name:'🐙 Pulpo',title:'PULPO',desc:'Animal invertebrado con ocho brazos y gran capacidad para resolver problemas.',fact:'Dato curioso: puede cambiar de color para camuflarse.',color:'#c77b9a',voice:'El pulpo tiene ocho brazos y puede cambiar de color para esconderse.'},
 {id:'jelly',name:'🪼 Medusa',title:'MEDUSA',desc:'Animal marino de cuerpo blando y gelatinoso. Se mueve principalmente con las corrientes.',fact:'Dato curioso: algunas medusas brillan gracias a la bioluminiscencia.',color:'#b18bd5',voice:'La medusa tiene un cuerpo gelatinoso y tentáculos. Algunas pueden producir luz.'}
 ];
-let mode='space',current=planets[0],rotating=true,size=.18;
-const root=document.getElementById('modelRoot'),sphere=document.getElementById('mainSphere'),extra=document.getElementById('extraModel');
+
+let mode='space', current=planets[0], rotating=true, size=.18;
+const root=document.getElementById('modelRoot');
+const sphere=document.getElementById('mainSphere');
+const extra=document.getElementById('extraModel');
+const label=document.getElementById('labelText');
+const orbit=document.getElementById('orbit');
 const select=document.getElementById('objectSelect');
-function clearExtra(){while(extra.firstChild)extra.removeChild(extra.firstChild)}
-function el(tag,attrs,parent=extra){const n=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));parent.appendChild(n);return n}
-function makeSaturn(){el('a-torus',{radius:'0.72',radiusTubular:'0.035',segmentsTubular:'8',segmentsRadial:'64',color:'#e5cf9a',rotation:'25 0 0'});el('a-torus',{radius:'0.82',radiusTubular:'0.018',color:'#b99c6d',rotation:'25 0 0'})}
+
+// 2. FUNCIONES 3D
+function clearExtra(){ while(extra.firstChild) extra.removeChild(extra.firstChild); }
+function el(tag,attrs,parent=extra){ const n=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v)); parent.appendChild(n); return n; }
+
+function makeSaturn(){
+  el('a-torus',{radius:'0.72',radiusTubular:'0.035',segmentsTubular:'8',segmentsRadial:'64',color:'#e5cf9a',rotation:'25 0 0'});
+  el('a-torus',{radius:'0.82',radiusTubular:'0.018',color:'#b99c6d',rotation:'25 0 0'});
+}
+
 function makeAnimal(id,color){
- const c=color;
- if(id==='dolphin'||id==='shark'||id==='whale'){
-  const len=id==='whale'?1.0:.78,rad=id==='whale'?.27:.19;
-  el('a-sphere',{radius:`${rad}`,scale:`${len} 0.75 0.62`,color:c,position:'0 0 0'});
-  el('a-cone',{radiusBottom:id==='shark'?.18:.13,radiusTop:'0',height:'.34',color:c,position:`-${len*.65} .03 0`,rotation:'0 0 90'});
-  el('a-cone',{radiusBottom:'.12',radiusTop:'0',height:'.28',color:c,position:`${len*.2} ${rad*.9} 0`,rotation:'0 0 0'});
-  el('a-sphere',{radius:'.035',color:'#111',position:`${len*.45} .06 .13`});
-  if(id==='shark') {el('a-cone',{radiusBottom:'.13',radiusTop:'0',height:'.25',color:'#d7e0e6',position:'0 -.12 0',rotation:'180 0 0'});}
-  if(id==='whale'){el('a-cone',{radiusBottom:'.1',radiusTop:'0',height:'.18',color:c,position:'.38 .24 0'});el('a-cone',{radiusBottom:'.09',radiusTop:'0',height:'.16',color:c,position:'.52 .22 .1'});}
- } else if(id==='turtle'){
-  el('a-sphere',{radius:'.32',scale:'1 .48 .8',color:'#92704c'});
-  el('a-sphere',{radius:'.16',position:'.32 0 0',color:'#69a879'});
-  [[-.2,.08,.28],[-.2,.08,-.28],[.18,.08,.28],[.18,.08,-.28]].forEach(p=>el('a-sphere',{radius:'.11',scale:'1 .45 1',position:p.join(' '),color:'#69a879'}));
- } else if(id==='octopus'){
-  el('a-sphere',{radius:'.25',color:c,position:'0 .1 0'});
-  for(let i=0;i<8;i++){let a=i*Math.PI/4;let x=Math.cos(a)*
+  const c=color;
+  if(id==='dolphin'||id==='shark'||id==='whale'){
+    const len=id==='whale'?1.0:.78,rad=id==='whale'?.27:.19;
+    el('a-sphere',{radius:`${rad}`,scale:`${len} 0.75 0.62`,color:c,position:'0 0 0'});
+    el('a-cone',{radiusBottom:id==='shark'?.18:.13,radiusTop:'0',height:'.34',color:c,position:`-${len*.65} .03 0`,rotation:'0 0 90'});
+    el('a-cone',{radiusBottom:'.12',radiusTop:'0',height:'.28',color:c,position:`${len*.2} ${rad*.9} 0`,rotation:'0 0 0'});
+    el('a-sphere',{radius:'.035',color:'#111',position:`${len*.45} .06 .13`});
+    if(id==='shark') { el('a-cone',{radiusBottom:'.13',radiusTop:'0',height:'.25',color:'#d7e0e6',position:'0 -.12 0',rotation:'180 0 0'}); }
+    if(id==='whale'){ el('a-cone',{radiusBottom:'.1',radiusTop:'0',height:'.18',color:c,position:'.38 .24 0'}); el('a-cone',{radiusBottom:'.09',radiusTop:'0',height:'.16',color:c,position:'.52 .22 .1'}); }
+  } else if(id==='turtle'){
+    el('a-sphere',{radius:'.32',scale:'1 .48 .8',color:'#92704c'});
+    el('a-sphere',{radius:'.16',position:'.32 0 0',color:'#69a879'});
+    [[-.2,.08,.28],[-.2,.08,-.28],[.18,.08,.28],[.18,.08,-.28]].forEach(p=>el('a-sphere',{radius:'.11',scale:'1 .45 1',position:p.join(' '),color:'#69a879'}));
+  } else if(id==='octopus'){
+    el('a-sphere',{radius:'.25',color:c,position:'0 .1 0'});
+    for(let i=0;i<8;i++){ let a=i*Math.PI/4; let x=Math.cos(a)*.18; let z=Math.sin(a)*.18; el('a-cylinder',{radius:'.03',height:'.4',color:c,position:`${x} -.1 ${z}`,rotation:`${Math.cos(a)*40} 0 ${Math.sin(a)*40}`}); }
+    el('a-sphere',{radius:'.04',color:'#111',position:'.12 .15 .18'}); el('a-sphere',{radius:'.04',color:'#111',position:'-.12 .15 .18'});
+  } else if(id==='jelly'){
+    el('a-sphere',{radius:'.28',scale:'1 .8 1',color:c,opacity:'.8',transparent:'true'});
+    for(let i=0;i<6;i++){ let a=i*Math.PI/3; el('a-cylinder',{radius:'.015',height:'.5',color:c,position:`${Math.cos(a)*.15} -.3 ${Math.sin(a)*.15}`}); }
+  }
+}
+
+// 3. ACTUALIZAR ESCENA
+function updateScene(){
+  const list = mode === 'space' ? planets : sea;
+  current = list[select.selectedIndex];
+  
+  // Textos UI
+  document.getElementById('objectName').textContent = current.name;
+  document.getElementById('description').textContent = current.desc;
+  document.getElementById('fact').textContent = current.fact;
+  label.setAttribute('text', 'value', current.title);
+  
+  clearExtra();
+  
+  if(mode === 'space'){
+    sphere.setAttribute('visible', true);
+    orbit.setAttribute('visible', true);
+    sphere.setAttribute('material', `color:${current.color}; roughness:1; src:${current.tex || ''}`);
+    if(current.id === 'saturn') makeSaturn();
+  } else {
+    sphere.setAttribute('visible', false);
+    orbit.setAttribute('visible', false);
+    makeAnimal(current.id, current.color);
+  }
+}
+
+// Llenar el select
+function fillSelect(){
+  select.innerHTML = '';
+  const list = mode === 'space' ? planets : sea;
+  list.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    select.appendChild(opt);
+  });
+  updateScene();
+}
+
+// 4. EVENTOS UI
+document.getElementById('spaceTab').onclick = () => {
+  mode = 'space'; 
+  document.getElementById('spaceTab').classList.add('active'); 
+  document.getElementById('seaTab').classList.remove('active');
+  fillSelect();
+};
+document.getElementById('seaTab').onclick = () => {
+  mode = 'sea'; 
+  document.getElementById('seaTab').classList.add('active'); 
+  document.getElementById('spaceTab').classList.remove('active');
+  fillSelect();
+};
+select.onchange = updateScene;
+
+document.getElementById('rotateBtn').onclick = function() {
+  rotating = !rotating;
+  this.textContent = rotating ? '⏸ Pausar giro' : '▶ Reanudar giro';
+};
+
+document.getElementById('voiceBtn').onclick = () => {
+  const msg = new SpeechSynthesisUtterance(current.voice);
+  msg.lang = 'es-MX';
+  window.speechSynthesis.speak(msg);
+};
+
+function updateSize(val) {
+  size = parseFloat(val);
+  root.setAttribute('scale', `${size} ${size} ${size}`);
+  document.getElementById('sizeValue').textContent = Math.round(size * 100) + " cm aprox.";
+  document.getElementById('sizeRange').value = size;
+}
+
+document.getElementById('sizeRange').oninput = (e) => updateSize(e.target.value);
+document.getElementById('minusBtn').onclick = () => updateSize(Math.max(0.1, size - 0.02));
+document.getElementById('plusBtn').onclick = () => updateSize(Math.min(0.4, size + 0.02));
+
+document.getElementById('fitBtn').onclick = () => {
+  document.body.classList.toggle('fit-mode');
+};
+
+// 5. BOTÓN DE CÁMARA Y TRUCO PARA METER EL VIDEO EN EL CUADRO
+document.getElementById('cameraBtn').onclick = function() {
+  const box = document.getElementById('arbox');
+  box.classList.add('camera-live');
+  this.textContent = '📷 Cámara Activa';
+  this.classList.remove('primary');
+  
+  // TRUCO: AR.js inyecta el video y el canvas en el <body>. 
+  // Los movemos a la fuerza dentro de nuestro recuadro #arbox.
+  const moverElementosAR = setInterval(() => {
+    const video = document.querySelector('video');
+    const canvas = document.querySelector('canvas.a-canvas') || document.querySelector('canvas');
+    
+    if (video && !box.contains(video)) {
+      box.appendChild(video);
+      video.style.position = 'absolute';
+      video.style.top = '0';
+      video.style.left = '0';
+      video.style.width = '100%';
+      video.style.height = '100%';
+      video.style.objectFit = 'cover';
+      video.style.zIndex = '0';
+    }
+    if (canvas && !box.contains(canvas)) {
+      box.appendChild(canvas);
+      canvas.style.position = 'absolute';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.zIndex = '1';
+    }
+    
+    // Si ya se movieron ambos, detenemos el intervalo
+    if (video && canvas && box.contains(video) && box.contains(canvas)) {
+      clearInterval(moverElementosAR);
+    }
+  }, 500); // Revisa cada medio segundo hasta que aparezcan
+};
+
+// Animación de rotación
+let lastTime = performance.now();
+function animate(time) {
+  if (rotating) {
+    const dt = time - lastTime;
+    root.object3D.rotation.y += dt * 0.0005;
+  }
+  lastTime = time;
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// Inicializar
+fillSelect();
+</script>
+</body>
+</html>
