@@ -149,7 +149,7 @@ border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none
 </div>
 
 <a-scene embedded vr-mode-ui="enabled:false" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/"
-renderer="logarithmicDepthBuffer:true; antialias:true; alpha:true"
+renderer="logarithmicDepthBuffer:true; antialias:true; alpha:true; colorManagement:true" loading-screen="enabled:false"
 arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
 
 <a-assets>
@@ -351,11 +351,13 @@ const spinner=el('a-entity',{},orient);
 if(c.spin){
 spinner.setAttribute('animation','property:rotation; from:0 0 0; to:0 360 0; dur:20000; loop:true; easing:linear; enabled:'+rotating);
 }
-const m=el('a-entity',{'gltf-model':'url('+c.model+')','animation-mixer':'timeScale:'+(rotating?1:0)},spinner);
+const modelUrl=new URL(c.model,document.baseURI).href;
+const m=el('a-entity',{'gltf-model':'url('+modelUrl+')','animation-mixer':'timeScale:'+(rotating?1:0)},spinner);
 
 m.addEventListener('model-loaded',()=>{
 if(current!==c||!m.isConnected)return;
 fitModel(m,c);
+Array.from(extra.children).forEach(child=>{if(child!==orient)child.remove();});
 sphere.setAttribute('visible',false);
 orbit.setAttribute('visible',false);
 modelActive=true;
@@ -422,8 +424,10 @@ else if(current.id==='saturn')makeSaturn();
 }else{
 sphere.setAttribute('visible',false);
 orbit.setAttribute('visible',false);
-if(current.model)loadUserModel(current);
-else makeAnimal(current.id,current.color);
+if(current.model){
+makeAnimal(current.id,current.color); // respaldo visible mientras carga el GLB
+loadUserModel(current);
+}else makeAnimal(current.id,current.color);
 }
 applyViewerPose();
 }
@@ -527,7 +531,11 @@ h.scale.set(1,1,1);
 label.setAttribute('visible',!modelActive);
 }
 
-function startViewer(){
+async function startViewer(){
+if(!scene.hasLoaded){
+setStatus('⏳ Preparando el motor 3D…');
+await Promise.race([new Promise(r=>scene.addEventListener('loaded',r,{once:true})),new Promise(r=>setTimeout(r,8000))]);
+}
 if(!engineReady()){setStatus(ENGINE_MSG);return;}
 if(arStarted)stopCamera();
 viewerOn=true;
@@ -655,7 +663,7 @@ cameraBtn.classList.add('primary');
 
 async function startCamera(){
 if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-alert('Tu navegador no permite acceder a la cámara. Abre la página en Chrome mediante HTTPS.');
+alert('Tu navegador no permite acceder a la cámara. Abre la página en Microsoft Edge o Chrome mediante HTTPS.');
 return;
 }
 
@@ -699,7 +707,7 @@ cameraBtn.textContent='📷 Activar cámara';
 cameraBtn.classList.add('primary');
 
 alert(err.name==='NotAllowedError'
-?'No se concedió permiso para usar la cámara. Revisa los permisos de Chrome.'
+?'No se concedió permiso para usar la cámara. Revisa los permisos del sitio en Microsoft Edge.'
 :'No se pudo iniciar la cámara. Comprueba que la página use HTTPS y que ninguna otra aplicación esté usando la cámara.');
 }
 finally{
@@ -719,8 +727,15 @@ if(v.srcObject)v.srcObject.getTracks().forEach(t=>t.stop());
 });
 });
 
-if(!engineReady())setStatus(ENGINE_MSG);
+scene.addEventListener('loaded',()=>{
+setStatus('Motor 3D listo. Pulsa “Ver sin cámara” o activa la cámara.');
+});
+scene.addEventListener('renderstart',()=>moveARMediaIntoBox());
+if(location.protocol==='file:'){
+document.getElementById('modelNote').textContent='⚠️ Para cargar cámara y archivos GLB, publica esta carpeta mediante HTTPS; no abras index.html directamente como archivo local.';
+}
 fillSelect();
 updateSize(.18);
 </script>
 </body>
+</html>
