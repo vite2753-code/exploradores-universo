@@ -195,12 +195,14 @@
 <script>
 /* ============================================================
    CATÁLOGO
-   Cada "file" es el archivo .glb que subes al repo, junto a
-   index.html, en minúsculas y sin acentos ni espacios.
+   Cada "file" es el archivo .glb dentro de la carpeta "modelos",
+   en minúsculas, sin acentos y con guion bajo en vez de espacios.
    Solo aparecen en la lista los que ya subiste: puedes ir
    agregando archivos poco a poco sin tocar este código.
    Para agregar uno nuevo, copia un bloque { ... } y cambia sus datos.
    ============================================================ */
+const CARPETA = "modelos/"; // carpeta del repo donde están los .glb
+
 const DATA = {
   planetas: {
     titulo: "Explora el sistema solar",
@@ -264,19 +266,19 @@ const DATA = {
       { emoji: "🪼", nombre: "Medusa", file: "medusa.glb",
         texto: "Animal transparente que flota en el agua y se mueve abriendo y cerrando su cuerpo.",
         dato: "Dato curioso: no tiene cerebro ni corazón." },
-      { emoji: "🐠", nombre: "Pez payaso", file: "pezpayaso.glb",
+      { emoji: "🐠", nombre: "Pez payaso", file: "pez_payaso.glb",
         texto: "Pequeño pez naranja con rayas blancas que vive entre las anémonas de mar.",
         dato: "Dato curioso: todos nacen machos y algunos se convierten en hembras." },
       { emoji: "🦀", nombre: "Cangrejo", file: "cangrejo.glb",
         texto: "Animal con caparazón duro y diez patas, dos de ellas en forma de pinzas.",
         dato: "Dato curioso: camina de lado." },
-      { emoji: "⭐", nombre: "Estrella de mar", file: "estrellademar.glb",
+      { emoji: "⭐", nombre: "Estrella de mar", file: "estrella_de_mar.glb",
         texto: "Animal marino con forma de estrella que se mueve con miles de pequeños pies.",
         dato: "Dato curioso: puede regenerar un brazo perdido." },
-      { emoji: "🐴", nombre: "Caballito de mar", file: "caballitodemar.glb",
+      { emoji: "🐴", nombre: "Caballito de mar", file: "caballito_de_mar.glb",
         texto: "Pequeño pez de cabeza parecida a la de un caballo que nada en posición vertical.",
         dato: "Dato curioso: el macho es quien lleva los huevos." },
-      { emoji: "🐟", nombre: "Manta raya", file: "mantaraya.glb",
+      { emoji: "🐟", nombre: "Manta raya", file: "manta_raya.glb",
         texto: "Pez enorme y plano que parece volar bajo el agua moviendo sus aletas.",
         dato: "Dato curioso: puede medir más de 5 metros de ancho." }
     ]
@@ -303,7 +305,7 @@ function mostrarEstado(msg) {
 /* Revisa qué archivos .glb existen en el repo */
 async function existe(file) {
   try {
-    const r = await fetch(file, { method: "HEAD", cache: "no-store" });
+    const r = await fetch(CARPETA + file, { method: "HEAD", cache: "no-store" });
     return r.ok;
   } catch (e) {
     return true; // si no se puede comprobar, se muestra igual
@@ -336,7 +338,7 @@ function cargar(i) {
   actual = lista[i];
   mostrarEstado("Cargando " + actual.nombre + "…");
   viewer.alt = "Modelo 3D de " + actual.nombre;
-  viewer.src = actual.file;
+  viewer.src = CARPETA + actual.file;
   aplicarTamano(1);
   document.getElementById("infoTitle").textContent = actual.emoji + " " + actual.nombre;
   document.getElementById("infoText").textContent = actual.texto;
@@ -345,7 +347,7 @@ function cargar(i) {
 
 viewer.addEventListener("load", function () { mostrarEstado(""); });
 viewer.addEventListener("error", function () {
-  mostrarEstado("No se encontró " + (actual ? actual.file : "el modelo") + " en el repositorio. Debe llamarse exactamente así, en minúsculas y junto a index.html.");
+  mostrarEstado("No se encontró " + (actual ? actual.file : "el modelo") + " dentro de la carpeta modelos. Debe llamarse exactamente así.");
 });
 viewer.addEventListener("ar-status", function (e) {
   if (e.detail.status === "failed") {
