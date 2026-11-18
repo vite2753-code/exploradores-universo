@@ -348,8 +348,19 @@ function loadUserModel(c){
 const note=document.getElementById('modelNote');
 const orient=el('a-entity',{rotation:c.modelRot||'90 0 0'});
 const spinner=el('a-entity',{},orient);
+
+// Animaciones de natación para los modelos marinos.
+// Son movimientos suaves del cuerpo; los movimientos de aletas individuales
+// dependen de que el archivo GLB incluya huesos o clips de animación.
+if(mode==='sea' && c.id==='dolphin'){
+spinner.setAttribute('animation__swim','property:position; from:0 0 0; to:0 0.045 0; dur:1500; direction:alternate; loop:true; easing:easeInOutSine; enabled:'+rotating);
+spinner.setAttribute('animation__rock','property:rotation; from:0 0 -3; to:0 0 3; dur:1900; direction:alternate; loop:true; easing:easeInOutSine; enabled:'+rotating);
+}else if(mode==='sea' && c.id==='manta'){
+spinner.setAttribute('animation__glide','property:position; from:0 0 0; to:0 0.055 0; dur:2100; direction:alternate; loop:true; easing:easeInOutSine; enabled:'+rotating);
+spinner.setAttribute('animation__bank','property:rotation; from:-4 0 -3; to:4 0 3; dur:2400; direction:alternate; loop:true; easing:easeInOutSine; enabled:'+rotating);
+}
 if(c.spin){
-spinner.setAttribute('animation','property:rotation; from:0 0 0; to:0 360 0; dur:20000; loop:true; easing:linear; enabled:'+rotating);
+spinner.setAttribute('animation__spin','property:rotation; from:0 0 0; to:0 360 0; dur:20000; loop:true; easing:linear; enabled:'+rotating);
 }
 const modelUrl=new URL(c.model,document.baseURI).href;
 const m=el('a-entity',{'gltf-model':'url('+modelUrl+')','animation-mixer':'timeScale:'+(rotating?1:0)},spinner);
@@ -393,8 +404,14 @@ makeAnimal(c.id,c.color);
 function applyRotationState(){
 const mm=extra.querySelector('[gltf-model]');
 if(mm)mm.setAttribute('animation-mixer','timeScale',rotating?1:0);
-const sp=extra.querySelector('[animation]');
-if(sp)sp.setAttribute('animation','enabled',rotating);
+// Pausar o reanudar todos los movimientos ambientales del modelo.
+extra.querySelectorAll('*').forEach(sp=>{
+Array.from(sp.attributes).forEach(attr=>{
+if(attr.name==='animation' || attr.name.startsWith('animation__')){
+sp.setAttribute(attr.name,'enabled',rotating);
+}
+});
+});
 }
 
 function updateScene(){
