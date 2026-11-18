@@ -149,8 +149,9 @@
       shadow-intensity="1"
       interaction-prompt="none"
       touch-action="pan-y">
-      <button slot="ar-button" id="arBtn">📲 Ver en mi espacio</button>
+      <button slot="ar-button" style="display:none" aria-hidden="true" tabindex="-1"></button>
     </model-viewer>
+    <button id="arBtn">📷 Activar cámara y colocar</button>
     <div id="status" role="status"></div>
   </div>
 
@@ -167,7 +168,7 @@
       <span id="sizeVal" class="small">100%</span>
     </div>
     <p class="small" style="margin:10px 0 0;text-align:center">
-      Arrastra con el dedo para girarlo. Pulsa “Ver en mi espacio”, apunta el celular al piso o a una mesa y toca para colocarlo.
+      Arrastra con el dedo para girarlo. Pulsa “Activar cámara y colocar”, apunta el celular al piso o a una mesa y toca para colocarlo.
     </p>
   </section>
 
@@ -182,7 +183,7 @@
     <ol>
       <li>Abre esta página desde tu celular.</li>
       <li>Elige un planeta o un animal.</li>
-      <li>Pulsa “Ver en mi espacio” y permite el uso de la cámara.</li>
+      <li>Pulsa “Activar cámara y colocar” y permite el uso de la cámara.</li>
       <li>Mueve el celular despacio hasta que detecte una superficie plana.</li>
       <li>Toca la pantalla para colocar el objeto. Con dos dedos puedes cambiar su tamaño y girarlo.</li>
     </ol>
@@ -310,12 +311,12 @@ async function existe(file) {
 }
 
 function llenarSelect() {
-  lista = DATA[modo].items.filter(function (it) { return it.ok; });
+  lista = DATA[modo].items;
   select.innerHTML = "";
   lista.forEach(function (it, i) {
     const op = document.createElement("option");
     op.value = i;
-    op.textContent = it.emoji + " " + it.nombre;
+    op.textContent = it.emoji + " " + it.nombre + (it.ok ? "" : " (falta " + it.file + ")");
     select.appendChild(op);
   });
   document.getElementById("modeTitle").textContent = DATA[modo].titulo;
@@ -344,7 +345,7 @@ function cargar(i) {
 
 viewer.addEventListener("load", function () { mostrarEstado(""); });
 viewer.addEventListener("error", function () {
-  mostrarEstado("No se pudo cargar " + (actual ? actual.file : "el modelo") + ". Revisa que el archivo no esté dañado.");
+  mostrarEstado("No se encontró " + (actual ? actual.file : "el modelo") + " en el repositorio. Debe llamarse exactamente así, en minúsculas y junto a index.html.");
 });
 viewer.addEventListener("ar-status", function (e) {
   if (e.detail.status === "failed") {
@@ -362,6 +363,17 @@ function cambiarModo(nuevo) {
 document.getElementById("tabPlanetas").addEventListener("click", function () { cambiarModo("planetas"); });
 document.getElementById("tabMarino").addEventListener("click", function () { cambiarModo("marino"); });
 select.addEventListener("change", function () { cargar(parseInt(select.value, 10)); });
+
+/* Cámara / realidad aumentada */
+document.getElementById("arBtn").addEventListener("click", function () {
+  if (!actual) return;
+  if (viewer.canActivateAR) {
+    viewer.activateAR();
+  } else {
+    mostrarEstado("Este celular o navegador no permite colocar objetos en AR. Prueba con Chrome en un Android con ARCore.");
+    setTimeout(function () { mostrarEstado(""); }, 5000);
+  }
+});
 
 /* Giro */
 btnRotar.addEventListener("click", function () {
