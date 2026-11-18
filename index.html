@@ -27,6 +27,8 @@ header p{color:#b8cce2;font-size:13px}
 button{cursor:pointer}
 .action{background:#1b4968;border:1px solid #4a7897;color:white;border-radius:12px;padding:11px 12px;font-weight:700}
 .action.primary{background:#087d91;border-color:#5ee7f5}
+.action.danger{background:#7a2230;border-color:#e5707f}
+.action:disabled{opacity:.45;cursor:not-allowed}
 .action:active,.tab:active{transform:scale(.98)}
 
 #arbox{
@@ -78,6 +80,9 @@ text-align:center;background:#071426cc;padding:9px;
 border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none
 }
 #arbox.camera-live .ar-preview,#arbox.camera-live .hint{display:none!important}
+#arbox.viewer-live a-scene{opacity:1;pointer-events:auto}
+#arbox.viewer-live{touch-action:none}
+#arbox.viewer-live .ar-preview,#arbox.viewer-live .hint{display:none!important}
 .info h2{margin:0 0 6px;font-size:21px}
 .info p{margin:5px 0;color:#d1e1f2;line-height:1.45}
 .fact{color:var(--gold)!important;font-weight:700}
@@ -100,8 +105,9 @@ border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none
 }
 </style>
 
-<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 </head>
 <body>
 
@@ -112,6 +118,7 @@ border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none
 
 <div class="toptools">
 <button class="action primary" id="cameraBtn">📷 Activar cámara</button>
+<button class="action" id="viewBtn">👁️ Ver sin cámara</button>
 <button class="action" id="fitBtn">⛶ Ajustar pantalla</button>
 </div>
 
@@ -138,10 +145,10 @@ border-radius:12px;font-size:12px;color:#d9eaff;pointer-events:none
 <div class="ar-preview" id="arPreview">
 <div class="planet" id="previewPlanet"></div>
 <strong id="previewTitle">🌎 Tierra en 3D</strong>
-<span id="previewMessage">Presiona "Activar cámara" y apunta al marcador HIRO.</span>
+<span id="previewMessage">Presiona "Activar cámara" y apunta al marcador HIRO, o pulsa "Ver sin cámara".</span>
 </div>
 
-<a-scene embedded vr-mode-ui="enabled:false"
+<a-scene embedded vr-mode-ui="enabled:false" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/"
 renderer="logarithmicDepthBuffer:true; antialias:true; alpha:true"
 arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
 
@@ -153,7 +160,9 @@ arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;
 <img id="moonTex" crossorigin="anonymous" src="https://threejs.org/examples/textures/planets/moon_1024.jpg">
 </a-assets>
 
-<a-marker preset="hiro" id="hiroMarker">
+<a-marker preset="hiro" id="hiroMarker"></a-marker>
+
+<a-entity id="anchorHolder" visible="false">
 <a-entity id="modelRoot" position="0 0.10 0" rotation="-90 0 0" scale="0.18 0.18 0.18">
 <a-sphere id="mainSphere" radius="0.48" segments-width="48" segments-height="32" material="color:#168bd2; roughness:1"></a-sphere>
 <a-entity id="extraModel"></a-entity>
@@ -162,7 +171,7 @@ arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;
 <a-ring radius-inner="0.68" radius-outer="0.69" color="#9edcff" opacity=".65" rotation="90 0 0"></a-ring>
 </a-entity>
 </a-entity>
-</a-marker>
+</a-entity>
 
 <a-entity camera></a-entity>
 </a-scene>
@@ -175,7 +184,9 @@ arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;
 <button class="action" id="voiceBtn">🔊 Escuchar explicación</button>
 <button class="action" id="minusBtn">➖ Más pequeño</button>
 <button class="action" id="plusBtn">➕ Más grande</button>
+<button class="action danger" id="removeBtn" style="grid-column:1/-1" disabled>🗑️ Eliminar objeto</button>
 </div>
+<div class="small" id="arStatus" style="margin-top:10px;text-align:center">Activa la cámara y apunta a la tarjeta HIRO para colocar el objeto.</div>
 <div class="scale">
 <span class="small">Tamaño</span>
 <input id="sizeRange" type="range" min=".10" max=".40" step=".01" value=".18">
@@ -190,6 +201,7 @@ arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;
 <h2 id="objectName">🌎 Tierra</h2>
 <p id="description">Nuestro hogar: un planeta con océanos, continentes y una atmósfera que hace posible la vida.</p>
 <p class="fact" id="fact">Dato curioso: cerca del 71% de su superficie está cubierta de agua.</p>
+<p class="small" id="modelNote" style="color:#ffb3b3"></p>
 </div>
 
 <div class="panel">
@@ -198,7 +210,9 @@ arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;
 <li>Abre esta página desde tu celular y permite usar la cámara.</li>
 <li>Coloca la tarjeta HIRO impresa sobre una mesa.</li>
 <li>Apunta la cámara hasta que aparezca el objeto 3D.</li>
+<li>El objeto se queda en pantalla aunque dejes de enfocar la tarjeta.</li>
 <li>Cambia de planeta o animal, gira y ajusta su tamaño.</li>
+<li>Pulsa “Eliminar objeto” cuando quieras quitarlo.</li>
 </ol>
 </div>
 
@@ -214,6 +228,15 @@ arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;
 </main>
 
 <script>
+/* ===== CÓMO AGREGAR TUS MODELOS 3D =====
+1) Exporta tu modelo como .glb (con animaciones) y súbelo a la carpeta "modelos/" de tu repositorio.
+2) En el objeto que quieras (planeta o animal) agrega estas líneas:
+   model:'modelos/sol.glb',   // ruta del archivo (obligatoria)
+   modelSize:1,               // tamaño relativo: 1 = como la esfera base; 1.5 = más grande
+   modelRot:'90 0 0',         // orientación; si se ve acostado o de cabeza, prueba '0 0 0', '180 0 0', '90 0 90'
+   spin:false                 // true = además gira solo sobre su eje vertical
+Si el archivo no existe, la app muestra la versión básica y avisa en pantalla.
+========================================= */
 const planets=[
 {id:'earth',name:'🌎 Tierra',title:'TIERRA',desc:'Nuestro hogar: un planeta con océanos, continentes y una atmósfera que hace posible la vida.',fact:'Dato curioso: cerca del 71% de su superficie está cubierta de agua.',tex:'#earthTex',color:'#168bd2',voice:'La Tierra es nuestro hogar. Tiene océanos, continentes y aire para respirar. Es el único planeta donde sabemos que existe vida.'},
 {id:'mars',name:'🔴 Marte',title:'MARTE',desc:'Es conocido como el planeta rojo por el hierro oxidado que hay en su suelo.',fact:'Dato curioso: tiene el volcán más grande conocido del sistema solar.',tex:'#marsTex',color:'#b85b37',voice:'Marte es el planeta rojo. Tiene montañas enormes y robots exploradores que estudian su superficie.'},
@@ -222,19 +245,22 @@ const planets=[
 {id:'venus',name:'🟡 Venus',title:'VENUS',desc:'Un planeta rocoso cubierto por nubes espesas. Su atmósfera atrapa muchísimo calor.',fact:'Dato curioso: Venus es el planeta más caliente del sistema solar.',tex:'#venusTex',color:'#d6a45b',voice:'Venus es muy caliente. Tiene nubes espesas y una atmósfera que atrapa el calor.'},
 {id:'mercury',name:'⚪ Mercurio',title:'MERCURIO',desc:'Es el planeta más cercano al Sol y también el más pequeño de los ocho planetas.',fact:'Dato curioso: aunque está cerca del Sol, sus noches son extremadamente frías.',tex:'#moonTex',color:'#aaa9a5',voice:'Mercurio es el planeta más cercano al Sol y es pequeño y rocoso.'},
 {id:'uranus',name:'🩵 Urano',title:'URANO',desc:'Un gigante helado de color azul verdoso que gira muy inclinado.',fact:'Dato curioso: parece rodar de lado mientras viaja alrededor del Sol.',tex:null,color:'#77d4d5',voice:'Urano es un planeta gigante y frío. Gira muy inclinado, casi de lado.'},
-{id:'neptune',name:'🔵 Neptuno',title:'NEPTUNO',desc:'Un gigante helado, azul y muy lejano al Sol.',fact:'Dato curioso: tiene vientos extremadamente rápidos.',tex:null,color:'#2864c7',voice:'Neptuno es un planeta azul, muy lejano y con vientos muy rápidos.'}
+{id:'neptune',name:'🔵 Neptuno',title:'NEPTUNO',desc:'Un gigante helado, azul y muy lejano al Sol.',fact:'Dato curioso: tiene vientos extremadamente rápidos.',tex:null,color:'#2864c7',voice:'Neptuno es un planeta azul, muy lejano y con vientos muy rápidos.'},
+{id:'sun',name:'☀️ Sol',title:'SOL',desc:'Es la estrella en el centro del sistema solar. Su luz y su calor hacen posible la vida en la Tierra.',fact:'Dato curioso: dentro del Sol caben más de un millón de planetas como la Tierra.',tex:null,color:'#ffb52e',model:'modelos/sol.glb',modelSize:1,spin:false,voice:'El Sol es una estrella enorme. Nos da luz y calor, y todos los planetas giran a su alrededor.'}
 ];
 
 const sea=[
-{id:'dolphin',name:'🐬 Delfín',title:'DELFÍN',desc:'Mamífero marino inteligente que respira aire por un orificio en la parte superior de su cabeza.',fact:'Dato curioso: los delfines usan sonidos y ecos para orientarse.',color:'#8abbd1',voice:'El delfín es un mamífero marino. Respira aire y utiliza sonidos para orientarse.'},
+{id:'dolphin',name:'🐬 Delfín',title:'DELFÍN',desc:'Mamífero marino inteligente que respira aire por un orificio en la parte superior de su cabeza.',fact:'Dato curioso: los delfines usan sonidos y ecos para orientarse.',color:'#8abbd1',model:'modelos/delfin.glb',voice:'El delfín es un mamífero marino. Respira aire y utiliza sonidos para orientarse.'},
 {id:'shark',name:'🦈 Tiburón',title:'TIBURÓN',desc:'Pez que respira bajo el agua mediante branquias. Existen muchas especies de tiburones.',fact:'Dato curioso: el tiburón ballena es el pez más grande del mundo.',color:'#8299aa',voice:'Los tiburones son peces. Hay muchas especies y no todos son grandes depredadores.'},
 {id:'whale',name:'🐋 Ballena azul',title:'BALLENA AZUL',desc:'El animal más grande conocido que ha vivido en la Tierra.',fact:'Dato curioso: su corazón puede ser del tamaño de un pequeño automóvil.',color:'#477fa9',voice:'La ballena azul es el animal más grande del planeta. Aunque vive en el mar, necesita salir a respirar.'},
 {id:'turtle',name:'🐢 Tortuga marina',title:'TORTUGA MARINA',desc:'Reptil adaptado al océano. Sus aletas le ayudan a nadar largas distancias.',fact:'Dato curioso: algunas tortugas marinas viajan miles de kilómetros.',color:'#65a77a',voice:'La tortuga marina es un reptil. Nada con sus aletas y puede recorrer grandes distancias.'},
 {id:'octopus',name:'🐙 Pulpo',title:'PULPO',desc:'Animal invertebrado con ocho brazos y gran capacidad para resolver problemas.',fact:'Dato curioso: puede cambiar de color para camuflarse.',color:'#c77b9a',voice:'El pulpo tiene ocho brazos y puede cambiar de color para esconderse.'},
-{id:'jelly',name:'🪼 Medusa',title:'MEDUSA',desc:'Animal marino de cuerpo blando y gelatinoso. Se mueve principalmente con las corrientes.',fact:'Dato curioso: algunas medusas brillan gracias a la bioluminiscencia.',color:'#b18bd5',voice:'La medusa tiene un cuerpo gelatinoso y tentáculos. Algunas pueden producir luz.'}
+{id:'jelly',name:'🪼 Medusa',title:'MEDUSA',desc:'Animal marino de cuerpo blando y gelatinoso. Se mueve principalmente con las corrientes.',fact:'Dato curioso: algunas medusas brillan gracias a la bioluminiscencia.',color:'#b18bd5',voice:'La medusa tiene un cuerpo gelatinoso y tentáculos. Algunas pueden producir luz.'},
+{id:'manta',name:'🐟 Manta raya',title:'MANTA RAYA',desc:'Pez de cuerpo plano que parece volar bajo el agua moviendo sus enormes aletas.',fact:'Dato curioso: algunas mantas miden cerca de 7 metros de una punta a otra de sus aletas.',color:'#5b7186',model:'modelos/manta_raya.glb',voice:'La manta raya es un pez de cuerpo plano. Parece volar bajo el agua moviendo sus enormes aletas.'},
+{id:'seahorse',name:'🐴 Caballito de mar',title:'CABALLITO DE MAR',desc:'Pequeño pez de cuerpo curvo y cola enrollable con la que se sujeta a las algas.',fact:'Dato curioso: el papá es quien lleva los huevos y da a luz a las crías.',color:'#e0a64a',model:'modelos/caballito_de_mar.glb',voice:'El caballito de mar es un pez pequeño. Se agarra a las algas con la cola y el papá lleva a los bebés.'}
 ];
 
-let mode='space',current=planets[0],rotating=true,size=.18,arStarted=false,scanTimer=null;
+let mode='space',current=planets[0],rotating=true,size=.18,arStarted=false,scanTimer=null,modelActive=false;
 
 const box=document.getElementById('arbox');
 const cameraBtn=document.getElementById('cameraBtn');
@@ -294,6 +320,81 @@ el('a-cylinder',{radius:'.015',height:'.5',color,position:`${Math.cos(a)*.15} -.
 }
 }
 
+function fitModel(ent,c){
+const T=AFRAME.THREE;
+const obj=ent.getObject3D('mesh');
+if(!obj)return;
+ent.object3D.updateMatrixWorld(true);
+const inv=new T.Matrix4().copy(ent.object3D.matrixWorld).invert();
+const box=new T.Box3();
+obj.traverse(o=>{
+if(o.geometry){
+if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();
+const b=o.geometry.boundingBox.clone();
+b.applyMatrix4(new T.Matrix4().multiplyMatrices(inv,o.matrixWorld));
+box.union(b);
+}
+});
+if(box.isEmpty())return;
+const sz=box.getSize(new T.Vector3());
+const ctr=box.getCenter(new T.Vector3());
+const maxDim=Math.max(sz.x,sz.y,sz.z)||1;
+const k=(c.modelSize||1)/maxDim;
+ent.object3D.scale.setScalar(k);
+ent.object3D.position.set(-ctr.x*k,-ctr.y*k,-ctr.z*k);
+}
+
+function loadUserModel(c){
+const note=document.getElementById('modelNote');
+const orient=el('a-entity',{rotation:c.modelRot||'90 0 0'});
+const spinner=el('a-entity',{},orient);
+if(c.spin){
+spinner.setAttribute('animation','property:rotation; from:0 0 0; to:0 360 0; dur:20000; loop:true; easing:linear; enabled:'+rotating);
+}
+const m=el('a-entity',{'gltf-model':'url('+c.model+')','animation-mixer':'timeScale:'+(rotating?1:0)},spinner);
+
+m.addEventListener('model-loaded',()=>{
+if(current!==c||!m.isConnected)return;
+fitModel(m,c);
+sphere.setAttribute('visible',false);
+orbit.setAttribute('visible',false);
+modelActive=true;
+note.textContent='';
+applyViewerPose();
+});
+
+m.addEventListener('model-error',()=>{
+if(current!==c)return;
+console.warn('No se pudo cargar el modelo',c.model);
+note.textContent='⚠️ No se pudo cargar "'+c.model+'". Comprobando la causa…';
+fetch(c.model,{method:'HEAD'}).then(r=>{
+if(current!==c)return;
+note.textContent=r.ok
+?'⚠️ El archivo "'+c.model+'" existe pero no se pudo leer: puede estar dañado o tener una compresión no compatible. Vuelve a exportarlo como .glb sin compresión.'
+:'⚠️ No se encontró "'+c.model+'" (error '+r.status+'). Revisa que esté dentro de la carpeta modelos y que el nombre coincida exactamente.';
+}).catch(()=>{
+if(current===c)note.textContent='⚠️ No se pudo comprobar "'+c.model+'". Si abres la página como archivo local, los modelos no cargan: ábrela desde tu sitio de GitHub Pages.';
+});
+clearExtra();
+modelActive=false;
+applyViewerPose();
+if(mode==='space'){
+sphere.setAttribute('visible',true);
+orbit.setAttribute('visible',true);
+if(c.id==='saturn')makeSaturn();
+}else{
+makeAnimal(c.id,c.color);
+}
+});
+}
+
+function applyRotationState(){
+const mm=extra.querySelector('[gltf-model]');
+if(mm)mm.setAttribute('animation-mixer','timeScale',rotating?1:0);
+const sp=extra.querySelector('[animation]');
+if(sp)sp.setAttribute('animation','enabled',rotating);
+}
+
 function updateScene(){
 const list=mode==='space'?planets:sea;
 current=list.find(x=>x.id===select.value)||list[0];
@@ -305,6 +406,8 @@ document.getElementById('previewTitle').textContent=current.name+' en 3D';
 
 label.setAttribute('text','value',current.title);
 clearExtra();
+modelActive=false;
+document.getElementById('modelNote').textContent='';
 
 if(mode==='space'){
 sphere.setAttribute('visible',true);
@@ -314,12 +417,15 @@ color:current.color,
 roughness:1,
 src:current.tex||''
 });
-if(current.id==='saturn')makeSaturn();
+if(current.model)loadUserModel(current);
+else if(current.id==='saturn')makeSaturn();
 }else{
 sphere.setAttribute('visible',false);
 orbit.setAttribute('visible',false);
-makeAnimal(current.id,current.color);
+if(current.model)loadUserModel(current);
+else makeAnimal(current.id,current.color);
 }
+applyViewerPose();
 }
 
 function fillSelect(){
@@ -351,8 +457,115 @@ fillSelect();
 
 select.onchange=updateScene;
 
+const holder=document.getElementById('anchorHolder');
+const marker=document.getElementById('hiroMarker');
+const removeBtn=document.getElementById('removeBtn');
+const arStatus=document.getElementById('arStatus');
+let placed=false,blocked=false,wasVisible=false,viewerOn=false,viewYaw=0;
+const VIEW_DIST=.45;
+const viewBtn=document.getElementById('viewBtn');
+
+function setStatus(t){arStatus.textContent=t}
+
+const ENGINE_MSG='⚠️ El motor 3D (A-Frame) no se cargó. Revisa tu conexión a internet, desactiva bloqueadores o prueba en otro navegador/celular y recarga la página.';
+function engineReady(){return !!(window.AFRAME&&holder.object3D&&scene.object3D);}
+
+function showObject(){
+placed=true;
+holder.setAttribute('visible',true);
+removeBtn.disabled=false;
+setStatus('✅ Objeto colocado. Se queda aunque dejes de enfocar la tarjeta. Pulsa "Eliminar objeto" para quitarlo.');
+}
+
+function removeObject(){
+if(viewerOn){resetObject();return;}
+placed=false;
+holder.setAttribute('visible',false);
+removeBtn.disabled=true;
+blocked=!!marker.object3D.visible;
+setStatus(blocked
+?'Objeto eliminado. Aparta la cámara de la tarjeta y vuelve a enfocarla para colocarlo otra vez.'
+:'Objeto eliminado. Apunta a la tarjeta HIRO para colocarlo otra vez.');
+}
+
+function resetObject(){
+placed=false;blocked=false;wasVisible=false;
+if(viewerOn){
+viewerOn=false;
+box.classList.remove('viewer-live');
+viewBtn.textContent='👁️ Ver sin cámara';
+label.setAttribute('visible',true);
+}
+holder.setAttribute('visible',false);
+removeBtn.disabled=true;
+setStatus('Activa la cámara y apunta a la tarjeta HIRO, o pulsa "Ver sin cámara".');
+}
+
+function trackMarker(){
+const m=marker.object3D;
+if(!m)return;
+const visible=!!m.visible;
+if(!visible&&wasVisible)blocked=false;
+if(visible&&!blocked&&arStarted){
+if(!placed)showObject();
+if(m.matrixAutoUpdate)m.updateMatrix();
+const h=holder.object3D;
+h.matrix.copy(m.matrix);
+h.matrix.decompose(h.position,h.quaternion,h.scale);
+}
+wasVisible=visible;
+}
+
+removeBtn.onclick=removeObject;
+
+function applyViewerPose(){
+if(!viewerOn||!holder.object3D)return;
+const h=holder.object3D;
+h.position.set(0,-0.02,-VIEW_DIST);
+h.rotation.set(modelActive?0.26:Math.PI/2,modelActive?viewYaw:0,0);
+h.scale.set(1,1,1);
+label.setAttribute('visible',!modelActive);
+}
+
+function startViewer(){
+if(!engineReady()){setStatus(ENGINE_MSG);return;}
+if(arStarted)stopCamera();
+viewerOn=true;
+viewYaw=0;
+box.classList.add('viewer-live');
+if(scene.hasLoaded&&!scene.isPlaying)scene.play();
+viewBtn.textContent='✖ Salir de vista 3D';
+placed=true;
+holder.setAttribute('visible',true);
+removeBtn.disabled=false;
+applyViewerPose();
+setStatus('👁️ Vista 3D sin cámara. Arrastra con el dedo para girarlo. "Eliminar objeto" o "Salir de vista 3D" lo quitan.');
+}
+
+viewBtn.onclick=()=>viewerOn?resetObject():startViewer();
+
+let dragging=false,lastX=0;
+box.addEventListener('pointerdown',e=>{
+if(!viewerOn)return;
+dragging=true;lastX=e.clientX;
+});
+box.addEventListener('pointermove',e=>{
+if(!viewerOn||!dragging)return;
+const dx=e.clientX-lastX;
+lastX=e.clientX;
+if(modelActive){
+viewYaw+=dx*0.01;
+applyViewerPose();
+}else{
+const r=root.getAttribute('rotation')||{x:-90,y:0,z:0};
+root.setAttribute('rotation',{x:r.x,y:r.y+dx*0.5,z:r.z});
+}
+});
+['pointerup','pointercancel','pointerleave'].forEach(t=>box.addEventListener(t,()=>{dragging=false}));
+
 function animate(){
-if(root&&rotating&&arStarted){
+trackMarker();
+if(root&&rotating&&(arStarted||viewerOn)&&!modelActive){
 const r=root.getAttribute('rotation')||{x:-90,y:0,z:0};
 root.setAttribute('rotation',{x:r.x,y:r.y+0.35,z:r.z});
 }
@@ -363,6 +576,7 @@ requestAnimationFrame(animate);
 document.getElementById('rotateBtn').onclick=function(){
 rotating=!rotating;
 this.textContent=rotating?'⏸ Pausar giro':'▶ Reanudar giro';
+applyRotationState();
 };
 
 document.getElementById('voiceBtn').onclick=()=>{
@@ -433,6 +647,7 @@ if(v.parentNode)v.parentNode.removeChild(v);
 });
 
 arStarted=false;
+resetObject();
 box.classList.remove('camera-live');
 cameraBtn.textContent='📷 Activar cámara';
 cameraBtn.classList.add('primary');
@@ -444,6 +659,8 @@ alert('Tu navegador no permite acceder a la cámara. Abre la página en Chrome m
 return;
 }
 
+if(!engineReady()){alert(ENGINE_MSG);return;}
+if(viewerOn)resetObject();
 cameraBtn.disabled=true;
 cameraBtn.textContent='⏳ Iniciando…';
 
@@ -502,6 +719,7 @@ if(v.srcObject)v.srcObject.getTracks().forEach(t=>t.stop());
 });
 });
 
+if(!engineReady())setStatus(ENGINE_MSG);
 fillSelect();
 updateSize(.18);
 </script>
