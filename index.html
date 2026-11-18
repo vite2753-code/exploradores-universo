@@ -5,8 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Exploradores del Universo</title>
 
-<!-- model-viewer: muestra el 3D y activa la realidad aumentada en superficies planas -->
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<!-- Visor 3D + realidad aumentada. Si el primer servidor falla, carga un respaldo. -->
+<script>
+  function cargarRespaldo() {
+    var s = document.createElement("script");
+    s.type = "module";
+    s.src = "https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
+    document.head.appendChild(s);
+  }
+</script>
+<script type="module"
+  src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"
+  onerror="cargarRespaldo()"></script>
 
 <style>
   *, *::before, *::after { box-sizing: border-box; }
@@ -52,8 +62,13 @@
 
   select { width: 100%; margin-top: 8px; background: #0a1f3f; }
 
+  /* Recuadro del 3D: la altura va en el contenedor para que nunca se colapse */
   .stage {
     position: relative;
+    width: 100%;
+    height: 56vh;
+    min-height: 300px;
+    max-height: 480px;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid rgba(120, 180, 230, .22);
@@ -61,10 +76,9 @@
     margin-bottom: 12px;
   }
   model-viewer {
+    display: block;
     width: 100%;
-    height: 52vh;
-    min-height: 280px;
-    max-height: 460px;
+    height: 100%;
     --poster-color: transparent;
     background: transparent;
   }
@@ -82,14 +96,14 @@
   }
   #status {
     position: absolute; left: 10px; right: 10px; top: 10px;
-    font-size: .8rem; text-align: center;
-    background: rgba(2, 12, 28, .75);
-    padding: 6px 10px; border-radius: 8px;
+    font-size: .82rem; text-align: center;
+    background: rgba(2, 12, 28, .8);
+    padding: 7px 10px; border-radius: 8px;
     display: none;
+    z-index: 2;
   }
 
   .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .controls .wide { grid-column: 1 / -1; }
   .sizeRow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
   .sizeRow input { flex: 1; min-width: 0; accent-color: #5ee0ff; }
 
@@ -99,8 +113,6 @@
 
   ol { margin: 6px 0 0; padding-left: 20px; font-size: .88rem; line-height: 1.6; color: #c4d6ea; }
   footer { font-size: .75rem; color: #7f9bbb; text-align: center; margin-top: 6px; }
-
-  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 </head>
 
@@ -181,41 +193,91 @@
 
 <script>
 /* ============================================================
-   LISTA DE OBJETOS
-   - "file" es el nombre del archivo .glb que subiste al repo
-     (mismo nivel que index.html).
-   - Si no tienes el archivo de alguno, borra su bloque { ... }.
-   - Para agregar uno nuevo, copia un bloque y cambia los datos.
+   CATÁLOGO
+   Cada "file" es el archivo .glb que subes al repo, junto a
+   index.html, en minúsculas y sin acentos ni espacios.
+   Solo aparecen en la lista los que ya subiste: puedes ir
+   agregando archivos poco a poco sin tocar este código.
+   Para agregar uno nuevo, copia un bloque { ... } y cambia sus datos.
    ============================================================ */
 const DATA = {
   planetas: {
     titulo: "Explora el sistema solar",
     items: [
-      { id: "tierra",  emoji: "🌎", nombre: "Tierra",
-        file: "tierra.glb",
+      { emoji: "☀️", nombre: "Sol", file: "sol.glb",
+        texto: "La estrella en el centro de nuestro sistema solar. Su luz y calor hacen posible la vida en la Tierra.",
+        dato: "Dato curioso: en el Sol cabrían más de un millón de Tierras." },
+      { emoji: "⚫", nombre: "Mercurio", file: "mercurio.glb",
+        texto: "El planeta más pequeño y el más cercano al Sol. Su superficie está llena de cráteres.",
+        dato: "Dato curioso: un año en Mercurio dura solo 88 días terrestres." },
+      { emoji: "🟡", nombre: "Venus", file: "venus.glb",
+        texto: "El planeta más caliente, cubierto por nubes densas de ácido sulfúrico.",
+        dato: "Dato curioso: Venus gira al revés que casi todos los planetas." },
+      { emoji: "🌎", nombre: "Tierra", file: "tierra.glb",
         texto: "Nuestro hogar: un planeta con océanos, continentes y una atmósfera que hace posible la vida.",
         dato: "Dato curioso: cerca del 71% de su superficie está cubierta de agua." },
-      { id: "luna",    emoji: "🌕", nombre: "Luna",
-        file: "luna.glb",
+      { emoji: "🌕", nombre: "Luna", file: "luna.glb",
         texto: "El único satélite natural de la Tierra. Su superficie está llena de cráteres.",
         dato: "Dato curioso: siempre vemos la misma cara de la Luna." },
-      { id: "marte",   emoji: "🔴", nombre: "Marte",
-        file: "marte.glb",
+      { emoji: "🔴", nombre: "Marte", file: "marte.glb",
         texto: "El planeta rojo. Tiene el volcán más grande conocido del sistema solar, el Monte Olimpo.",
         dato: "Dato curioso: un día en Marte dura casi lo mismo que uno en la Tierra." },
-      { id: "saturno", emoji: "🪐", nombre: "Saturno",
-        file: "saturno.glb",
+      { emoji: "🟠", nombre: "Júpiter", file: "jupiter.glb",
+        texto: "El planeta más grande del sistema solar, un gigante de gas con una enorme tormenta llamada Gran Mancha Roja.",
+        dato: "Dato curioso: tiene más de 90 lunas conocidas." },
+      { emoji: "🪐", nombre: "Saturno", file: "saturno.glb",
         texto: "Un gigante de gas famoso por sus anillos de hielo y roca.",
-        dato: "Dato curioso: Saturno es tan ligero que flotaría en agua." }
+        dato: "Dato curioso: Saturno es tan ligero que flotaría en agua." },
+      { emoji: "🔵", nombre: "Urano", file: "urano.glb",
+        texto: "Un gigante helado de color azul verdoso que gira inclinado, casi de lado.",
+        dato: "Dato curioso: sus estaciones duran más de 20 años cada una." },
+      { emoji: "🌀", nombre: "Neptuno", file: "neptuno.glb",
+        texto: "El planeta más lejano del Sol, azul intenso y con los vientos más veloces del sistema solar.",
+        dato: "Dato curioso: un año en Neptuno dura unos 165 años terrestres." },
+      { emoji: "⚪", nombre: "Plutón", file: "pluton.glb",
+        texto: "Un planeta enano helado en las afueras del sistema solar.",
+        dato: "Dato curioso: su superficie tiene una gran región en forma de corazón." }
     ]
   },
   marino: {
     titulo: "Explora el mundo marino",
     items: [
-      { id: "delfin",  emoji: "🐬", nombre: "Delfín",
-        file: "delfin.glb",
+      { emoji: "🐬", nombre: "Delfín", file: "delfin.glb",
         texto: "Mamífero marino inteligente que respira aire por un orificio en la parte superior de su cabeza.",
-        dato: "Dato curioso: los delfines usan sonidos y ecos para orientarse." }
+        dato: "Dato curioso: los delfines usan sonidos y ecos para orientarse." },
+      { emoji: "🐋", nombre: "Ballena", file: "ballena.glb",
+        texto: "El animal más grande del planeta. Se alimenta de pequeños animales que filtra del agua.",
+        dato: "Dato curioso: su canto puede escucharse a muchos kilómetros de distancia." },
+      { emoji: "🐳", nombre: "Orca", file: "orca.glb",
+        texto: "Un gran depredador marino que vive y caza en grupos familiares.",
+        dato: "Dato curioso: en realidad es un delfín, el más grande de todos." },
+      { emoji: "🦈", nombre: "Tiburón", file: "tiburon.glb",
+        texto: "Pez con esqueleto de cartílago que ha vivido en los océanos desde antes que los dinosaurios.",
+        dato: "Dato curioso: puede reemplazar miles de dientes a lo largo de su vida." },
+      { emoji: "🐢", nombre: "Tortuga marina", file: "tortuga.glb",
+        texto: "Reptil que pasa casi toda su vida en el mar y regresa a la playa a poner sus huevos.",
+        dato: "Dato curioso: suele volver a la misma playa donde nació." },
+      { emoji: "🐙", nombre: "Pulpo", file: "pulpo.glb",
+        texto: "Animal marino sin huesos, con ocho brazos y mucha inteligencia.",
+        dato: "Dato curioso: tiene tres corazones." },
+      { emoji: "🪼", nombre: "Medusa", file: "medusa.glb",
+        texto: "Animal transparente que flota en el agua y se mueve abriendo y cerrando su cuerpo.",
+        dato: "Dato curioso: no tiene cerebro ni corazón." },
+      { emoji: "🐠", nombre: "Pez payaso", file: "pezpayaso.glb",
+        texto: "Pequeño pez naranja con rayas blancas que vive entre las anémonas de mar.",
+        dato: "Dato curioso: todos nacen machos y algunos se convierten en hembras." },
+      { emoji: "🦀", nombre: "Cangrejo", file: "cangrejo.glb",
+        texto: "Animal con caparazón duro y diez patas, dos de ellas en forma de pinzas.",
+        dato: "Dato curioso: camina de lado." },
+      { emoji: "⭐", nombre: "Estrella de mar", file: "estrellademar.glb",
+        texto: "Animal marino con forma de estrella que se mueve con miles de pequeños pies.",
+        dato: "Dato curioso: puede regenerar un brazo perdido." },
+      { emoji: "🐴", nombre: "Caballito de mar", file: "caballitodemar.glb",
+        texto: "Pequeño pez de cabeza parecida a la de un caballo que nada en posición vertical.",
+        dato: "Dato curioso: el macho es quien lleva los huevos." },
+      { emoji: "🐟", nombre: "Manta raya", file: "mantaraya.glb",
+        texto: "Pez enorme y plano que parece volar bajo el agua moviendo sus aletas.",
+        dato: "Dato curioso: puede medir más de 5 metros de ancho." }
     ]
   }
 };
@@ -223,13 +285,13 @@ const DATA = {
 const viewer   = document.getElementById("viewer");
 const select   = document.getElementById("objectSelect");
 const statusEl = document.getElementById("status");
-const arBtn    = document.getElementById("arBtn");
 const btnRotar = document.getElementById("btnRotar");
 const btnVoz   = document.getElementById("btnVoz");
 const sizeEl   = document.getElementById("size");
 const sizeVal  = document.getElementById("sizeVal");
 
 let modo = "planetas";
+let lista = [];
 let actual = null;
 
 function mostrarEstado(msg) {
@@ -237,9 +299,20 @@ function mostrarEstado(msg) {
   statusEl.style.display = msg ? "block" : "none";
 }
 
+/* Revisa qué archivos .glb existen en el repo */
+async function existe(file) {
+  try {
+    const r = await fetch(file, { method: "HEAD", cache: "no-store" });
+    return r.ok;
+  } catch (e) {
+    return true; // si no se puede comprobar, se muestra igual
+  }
+}
+
 function llenarSelect() {
+  lista = DATA[modo].items.filter(function (it) { return it.ok; });
   select.innerHTML = "";
-  DATA[modo].items.forEach(function (it, i) {
+  lista.forEach(function (it, i) {
     const op = document.createElement("option");
     op.value = i;
     op.textContent = it.emoji + " " + it.nombre;
@@ -250,7 +323,16 @@ function llenarSelect() {
 
 function cargar(i) {
   detenerVoz();
-  actual = DATA[modo].items[i];
+  if (!lista.length) {
+    actual = null;
+    viewer.removeAttribute("src");
+    document.getElementById("infoTitle").textContent = "Aún no hay modelos aquí";
+    document.getElementById("infoText").textContent = "Sube tus archivos .glb al repositorio (por ejemplo delfin.glb) y vuelve a abrir la página.";
+    document.getElementById("infoFact").textContent = "";
+    mostrarEstado("No se encontraron archivos .glb para esta sección.");
+    return;
+  }
+  actual = lista[i];
   mostrarEstado("Cargando " + actual.nombre + "…");
   viewer.alt = "Modelo 3D de " + actual.nombre;
   viewer.src = actual.file;
@@ -262,8 +344,7 @@ function cargar(i) {
 
 viewer.addEventListener("load", function () { mostrarEstado(""); });
 viewer.addEventListener("error", function () {
-  mostrarEstado("No se encontró " + (actual ? actual.file : "el modelo") +
-                ". Revisa que esté subido al repositorio con ese nombre.");
+  mostrarEstado("No se pudo cargar " + (actual ? actual.file : "el modelo") + ". Revisa que el archivo no esté dañado.");
 });
 viewer.addEventListener("ar-status", function (e) {
   if (e.detail.status === "failed") {
@@ -271,7 +352,6 @@ viewer.addEventListener("ar-status", function (e) {
   }
 });
 
-/* Cambiar entre planetas y mundo marino */
 function cambiarModo(nuevo) {
   modo = nuevo;
   document.getElementById("tabPlanetas").classList.toggle("on", nuevo === "planetas");
@@ -281,7 +361,7 @@ function cambiarModo(nuevo) {
 }
 document.getElementById("tabPlanetas").addEventListener("click", function () { cambiarModo("planetas"); });
 document.getElementById("tabMarino").addEventListener("click", function () { cambiarModo("marino"); });
-select.addEventListener("change", function () { cargar(select.value); });
+select.addEventListener("change", function () { cargar(parseInt(select.value, 10)); });
 
 /* Giro */
 btnRotar.addEventListener("click", function () {
@@ -292,7 +372,7 @@ btnRotar.addEventListener("click", function () {
   btnRotar.textContent = girando ? "▶️ Reanudar giro" : "⏸️ Pausar giro";
 });
 
-/* Tamaño (vista previa en pantalla) */
+/* Tamaño de la vista previa */
 function aplicarTamano(v) {
   v = Math.min(2.5, Math.max(0.3, v));
   sizeEl.value = v;
@@ -318,9 +398,23 @@ btnVoz.addEventListener("click", function () {
   speechSynthesis.speak(u);
 });
 
-/* Inicio */
-llenarSelect();
-cargar(0);
+/* Inicio: detecta qué .glb existen y arranca en la primera sección con modelos */
+async function iniciar() {
+  mostrarEstado("Buscando modelos…");
+  const todos = DATA.planetas.items.concat(DATA.marino.items);
+  await Promise.all(todos.map(async function (it) { it.ok = await existe(it.file); }));
+
+  const hayPlanetas = DATA.planetas.items.some(function (it) { return it.ok; });
+  const hayMarino = DATA.marino.items.some(function (it) { return it.ok; });
+  cambiarModo(!hayPlanetas && hayMarino ? "marino" : "planetas");
+
+  setTimeout(function () {
+    if (!customElements.get("model-viewer")) {
+      mostrarEstado("No se pudo cargar el visor 3D. Revisa tu conexión a internet y recarga la página.");
+    }
+  }, 4000);
+}
+iniciar();
 </script>
 </body>
 </html>
