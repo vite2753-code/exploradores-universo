@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Exploradores del Universo</title>
+
+<!-- Visor 3D + realidad aumentada. Si el primer servidor falla, carga un respaldo. -->
+<script>
+  function cargarRespaldo() {
+    var s = document.createElement("script");
+    s.type = "module";
+    s.src = "https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
+    document.head.appendChild(s);
+  }
+</script>
+<script type="module"
+  src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"
+  onerror="cargarRespaldo()"></script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
+  body {
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #e8f1fb;
+    background: linear-gradient(180deg, #06142b 0%, #0b2349 60%, #0e2c57 100%);
+    padding: 14px 12px 40px;
+  }
+  main { width: 100%; max-width: 560px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 14px; }
+  h1 { font-size: 1.45rem; margin: 0 0 4px; }
+  header p { margin: 0; font-size: .9rem; color: #9db6d3; }
+
+  .panel {
+    background: rgba(12, 32, 62, .85);
+    border: 1px solid rgba(120, 180, 230, .22);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .small { font-size: .8rem; color: #9db6d3; }
+
+  button, select {
+    font: inherit;
+    color: inherit;
+    border-radius: 10px;
+    border: 1px solid rgba(120, 200, 240, .3);
+    background: #17406a;
+    padding: 11px 10px;
+    cursor: pointer;
+  }
+  button:focus-visible, select:focus-visible, input:focus-visible {
+    outline: 3px solid #5ee0ff; outline-offset: 2px;
+  }
+  button.on { background: #0b8299; border-color: #5ee0ff; }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .tabs button { font-weight: 600; }
+
+  select { width: 100%; margin-top: 8px; background: #0a1f3f; }
+
+  /* Recuadro del 3D: la altura va en el contenedor para que nunca se colapse */
+  .stage {
+    position: relative;
+    width: 100%;
+    height: 56vh;
+    min-height: 300px;
+    max-height: 480px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(120, 180, 230, .22);
+    background: radial-gradient(circle at 50% 45%, #0f4a80 0%, #08234a 55%, #030c1c 100%);
+    margin-bottom: 12px;
+  }
+  model-viewer {
+    display: block;
+    width: 100%;
+    height: 100%;
+    --poster-color: transparent;
+    background: transparent;
+  }
+  #arBtn {
+    position: absolute;
+    left: 50%; bottom: 14px;
+    transform: translateX(-50%);
+    background: #12b5d0;
+    color: #02121f;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 0;
+    white-space: nowrap;
+  }
+  #status {
+    position: absolute; left: 10px; right: 10px; top: 10px;
+    font-size: .82rem; text-align: center;
+    background: rgba(2, 12, 28, .8);
+    padding: 7px 10px; border-radius: 8px;
+    display: none;
+    z-index: 2;
+  }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sizeRow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .sizeRow input { flex: 1; min-width: 0; accent-color: #5ee0ff; }
+
+  h2 { font-size: 1.15rem; margin: 0 0 6px; }
+  .info p { margin: 0 0 8px; line-height: 1.45; }
+  .fact { color: #ffd77a; font-weight: 600; }
+
+  ol { margin: 6px 0 0; padding-left: 20px; font-size: .88rem; line-height: 1.6; color: #c4d6ea; }
+  footer { font-size: .75rem; color: #7f9bbb; text-align: center; margin-top: 6px; }
+
+  /* ===== Modo mano (seguimiento de manos) ===== */
+  #camVideo {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; display: none; z-index: 0;
+  }
+  #camVideo.espejo { transform: scaleX(-1); }
+  #handCanvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; display: none; z-index: 3;
+  }
+  .stage.hand { height: 66vh; max-height: 560px; }
+  .stage.hand #camVideo, .stage.hand #handCanvas { display: block; }
+  .stage.hand #arBtn { display: none; }
+  .stage.hand model-viewer {
+    position: absolute; left: 15%; top: 15%; width: 70%; height: 70%;
+    z-index: 1; transform-origin: center center; will-change: transform;
+  }
+  #btnMano { grid-column: 1 / -1; }
+
+  /* ===== Pantalla completa ===== */
+  #fsBtn {
+    position: absolute; top: 10px; right: 10px; z-index: 5;
+    padding: 8px 12px; border-radius: 10px; line-height: 1;
+    background: rgba(2, 12, 28, .75);
+  }
+  #status { right: 58px; }
+  .stage.fs {
+    position: fixed; inset: 0; z-index: 1000;
+    width: 100vw; height: 100vh; height: 100dvh;
+    max-height: none; min-height: 0;
+    border-radius: 0; border: 0; margin: 0;
+  }
+  .stage.fs #fsBtn { top: calc(10px + env(safe-area-inset-top, 0px)); }
+  .stage.fs #status { top: calc(10px + env(safe-area-inset-top, 0px)); }
+  #fsBar {
+    display: none; position: absolute; z-index: 5;
+    left: 10px; right: 10px; justify-content: center; gap: 8px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+  #fsBar button { background: rgba(2, 12, 28, .75); }
+  .stage.fs.hand #fsBar { display: flex; }
+  #handTools { display: none; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+</style>
+</head>
+
+<body>
+<main>
+
+  <header>
+    <h1>🚀 Exploradores del Universo</h1>
+    <p>Descubre el espacio y los océanos, y colócalos en tu mesa o en el piso</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button id="tabPlanetas" role="tab" class="on">🪐 Planetas</button>
+    <button id="tabMarino" role="tab">🐬 Mundo marino</button>
+  </div>
+
+  <section class="panel">
+    <strong id="modeTitle">Explora el sistema solar</strong>
+    <div class="small">Elige qué quieres descubrir</div>
+    <select id="objectSelect" aria-label="Selecciona un objeto"></select>
+  </section>
+
+  <div class="stage">
+    <video id="camVideo" playsinline muted></video>
+    <model-viewer
+      id="viewer"
+      alt="Modelo 3D"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-placement="floor"
+      ar-scale="auto"
+      camera-controls
+      auto-rotate
+      autoplay
+      shadow-intensity="1"
+      interaction-prompt="none"
+      touch-action="pan-y">
+      <button slot="ar-button" style="display:none" aria-hidden="true" tabindex="-1"></button>
+    </model-viewer>
+    <button id="arBtn">📷 Activar cámara y colocar</button>
+    <div id="status" role="status"></div>
+    <canvas id="handCanvas"></canvas>
+    <button id="fsBtn" aria-label="Pantalla completa">⛶</button>
+    <div id="fsBar">
+      <button id="fsCentrar">🎯 Centrar</button>
+      <button id="fsCamara">🔄 Cámara</button>
+    </div>
+  </div>
+
+  <section class="panel">
+    <div class="controls">
+      <button id="btnRotar" class="on">⏸️ Pausar</button>
+      <button id="btnVoz">🔊 Escuchar explicación</button>
+      <button id="btnMenos">➖ Más pequeño</button>
+      <button id="btnMas">➕ Más grande</button>
+      <button id="btnMano">✋ Tomar con la mano</button>
+    </div>
+    <div id="handTools">
+      <button id="btnCentrar">🎯 Centrar objeto</button>
+      <button id="btnCamara">🔄 Cambiar cámara</button>
+      <p class="small" style="grid-column:1/-1;margin:2px 0 0;line-height:1.7">
+        🤏 Pellizca sobre el objeto para tomarlo y muévelo.<br>
+        🔄 Con el pellizco, gira la muñeca para rotarlo.<br>
+        📏 Acerca o aleja la mano para cambiar su tamaño. También puedes pellizcar con las dos manos y separarlas o juntarlas.<br>
+        ✊ Puño: pausa. 🖐️ Palma abierta (mantenida): reanuda.<br>
+        👈 Desliza la mano abierta de lado: cambia de objeto.<br>
+        👍 Pulgar arriba: escucha la explicación.<br>
+        🤏🤏 Doble toque rápido de pellizco: centrar.
+      </p>
+    </div>
+    <div class="sizeRow">
+      <label for="size" class="small">Tamaño</label>
+      <input type="range" id="size" min="0.3" max="2.5" step="0.1" value="1">
+      <span id="sizeVal" class="small">100%</span>
+    </div>
+    <p class="small" style="margin:10px 0 0;text-align:center">
+      Arrastra con el dedo para girarlo. Pulsa “Activar cámara y colocar”, apunta el celular al piso o a una mesa y toca para colocarlo.
+    </p>
+  </section>
+
+  <section class="panel info">
+    <h2 id="infoTitle"></h2>
+    <p id="infoText"></p>
+    <p class="fact" id="infoFact"></p>
+  </section>
+
+  <section class="panel">
+    <strong>🧭 ¿Cómo jugar?</strong>
+    <ol>
+      <li>Abre esta página desde tu celular.</li>
+      <li>Elige un planeta o un animal.</li>
+      <li>Pulsa “Activar cámara y colocar” y permite el uso de la cámara.</li>
+      <li>Mueve el celular despacio hasta que detecte una superficie plana.</li>
+      <li>Toca la pantalla para colocar el objeto. Con dos dedos puedes cambiar su tamaño y girarlo.</li>
+    </ol>
+  </section>
+
+  <footer>Versión experimental. Requiere conexión a internet y abrirse mediante HTTPS.</footer>
+</main>
+
+<script>
+/* ============================================================
+   CATÁLOGO
+   Cada "file" es el archivo .glb dentro de la carpeta "modelos",
+   en minúsculas, sin acentos y con guion bajo en vez de espacios.
+   Solo aparecen en la lista los que ya subiste: puedes ir
+   agregando archivos poco a poco sin tocar este código.
+   Para agregar uno nuevo, copia un bloque { ... } y cambia sus datos.
+   ============================================================ */
+const CARPETA = "modelos/"; // carpeta del repo donde están los .glb
+
+const DATA = {
+  planetas: {
+    titulo: "Explora el sistema solar",
+    items: [
+      { emoji: "☀️", nombre: "Sol", file: "sol.glb",
+        texto: "La estrella en el centro de nuestro sistema solar. Su luz y calor hacen posible la vida en la Tierra.",
+        dato: "Dato curioso: en el Sol cabrían más de un millón de Tierras." },
+      { emoji: "⚫", nombre: "Mercurio", file: "mercurio.glb",
+        texto: "El planeta más pequeño y el más cercano al Sol. Su superficie está llena de cráteres.",
+        dato: "Dato curioso: un año en Mercurio dura solo 88 días terrestres." },
+      { emoji: "🟡", nombre: "Venus", file: "venus.glb",
+        texto: "El planeta más caliente, cubierto por nubes densas de ácido sulfúrico.",
+        dato: "Dato curioso: Venus gira al revés que casi todos los planetas." },
+      { emoji: "🌎", nombre: "Tierra", file: "tierra.glb",
+        texto: "Nuestro hogar: un planeta con océanos, continentes y una atmósfera que hace posible la vida.",
+        dato: "Dato curioso: cerca del 71% de su superficie está cubierta de agua." },
+      { emoji: "🌕", nombre: "Luna", file: "luna.glb",
+        texto: "El único satélite natural de la Tierra. Su superficie está llena de cráteres.",
+        dato: "Dato curioso: siempre vemos la misma cara de la Luna." },
+      { emoji: "🔴", nombre: "Marte", file: "marte.glb",
+        texto: "El planeta rojo. Tiene el volcán más grande conocido del sistema solar, el Monte Olimpo.",
+        dato: "Dato curioso: un día en Marte dura casi lo mismo que uno en la Tierra." },
+      { emoji: "🟠", nombre: "Júpiter", file: "jupiter.glb",
+        texto: "El planeta más grande del sistema solar, un gigante de gas con una enorme tormenta llamada Gran Mancha Roja.",
+        dato: "Dato curioso: tiene más de 90 lunas conocidas." },
+      { emoji: "🪐", nombre: "Saturno", file: "saturno.glb",
+        texto: "Un gigante de gas famoso por sus anillos de hielo y roca.",
+        dato: "Dato curioso: Saturno es tan ligero que flotaría en agua." },
+      { emoji: "🔵", nombre: "Urano", file: "urano.glb",
+        texto: "Un gigante helado de color azul verdoso que gira inclinado, casi de lado.",
+        dato: "Dato curioso: sus estaciones duran más de 20 años cada una." },
+      { emoji: "🌀", nombre: "Neptuno", file: "neptuno.glb",
+        texto: "El planeta más lejano del Sol, azul intenso y con los vientos más veloces del sistema solar.",
+        dato: "Dato curioso: un año en Neptuno dura unos 165 años terrestres." },
+      { emoji: "⚪", nombre: "Plutón", file: "pluton.glb",
+        texto: "Un planeta enano helado en las afueras del sistema solar.",
+        dato: "Dato curioso: su superficie tiene una gran región en forma de corazón." }
+    ]
+  },
+  marino: {
+    titulo: "Explora el mundo marino",
+    items: [
+      { emoji: "🐬", nombre: "Delfín", file: "delfin.glb",
+        texto: "Mamífero marino inteligente que respira aire por un orificio en la parte superior de su cabeza.",
+        dato: "Dato curioso: los delfines usan sonidos y ecos para orientarse." },
+      { emoji: "🐋", nombre: "Ballena", file: "ballena.glb",
+        texto: "El animal más grande del planeta. Se alimenta de pequeños animales que filtra del agua.",
+        dato: "Dato curioso: su canto puede escucharse a muchos kilómetros de distancia." },
+      { emoji: "🐳", nombre: "Orca", file: "orca.glb",
+        texto: "Un gran depredador marino que vive y caza en grupos familiares.",
+        dato: "Dato curioso: en realidad es un delfín, el más grande de todos." },
+      { emoji: "🦈", nombre: "Tiburón", file: "tiburon.glb",
+        texto: "Pez con esqueleto de cartílago que ha vivido en los océanos desde antes que los dinosaurios.",
+        dato: "Dato curioso: puede reemplazar miles de dientes a lo largo de su vida." },
+      { emoji: "🐢", nombre: "Tortuga marina", file: "tortuga.glb",
+        texto: "Reptil que pasa casi toda su vida en el mar y regresa a la playa a poner sus huevos.",
+        dato: "Dato curioso: suele volver a la misma playa donde nació." },
+      { emoji: "🐙", nombre: "Pulpo", file: "pulpo.glb",
+        texto: "Animal marino sin huesos, con ocho brazos y mucha inteligencia.",
+        dato: "Dato curioso: tiene tres corazones." },
+      { emoji: "🪼", nombre: "Medusa", file: "medusa.glb",
+        texto: "Animal transparente que flota en el agua y se mueve abriendo y cerrando su cuerpo.",
+        dato: "Dato curioso: no tiene cerebro ni corazón." },
+      { emoji: "🐠", nombre: "Pez payaso", file: "pez_payaso.glb",
+        texto: "Pequeño pez naranja con rayas blancas que vive entre las anémonas de mar.",
+        dato: "Dato curioso: todos nacen machos y algunos se convierten en hembras." },
+      { emoji: "🦀", nombre: "Cangrejo", file: "cangrejo.glb",
+        texto: "Animal con caparazón duro y diez patas, dos de ellas en forma de pinzas.",
+        dato: "Dato curioso: camina de lado." },
+      { emoji: "⭐", nombre: "Estrella de mar", file: "estrella_de_mar.glb",
+        texto: "Animal marino con forma de estrella que se mueve con miles de pequeños pies.",
+        dato: "Dato curioso: puede regenerar un brazo perdido." },
+      { emoji: "🐴", nombre: "Caballito de mar", file: "caballito_de_mar.glb",
+        texto: "Pequeño pez de cabeza parecida a la de un caballo que nada en posición vertical.",
+        dato: "Dato curioso: el macho es quien lleva los huevos." },
+      { emoji: "🐟", nombre: "Manta raya", file: "manta_raya.glb",
+        texto: "Pez enorme y plano que parece volar bajo el agua moviendo sus aletas.",
+        dato: "Dato curioso: puede medir más de 5 metros de ancho." }
+    ]
+  }
+};
+
+const viewer   = document.getElementById("viewer");
+const select   = document.getElementById("objectSelect");
+const statusEl = document.getElementById("status");
+const btnRotar = document.getElementById("btnRotar");
+const btnVoz   = document.getElementById("btnVoz");
+const sizeEl   = document.getElementById("size");
+const sizeVal  = document.getElementById("sizeVal");
+
+let modo = "planetas";
+let lista = [];
+let actual = null;
+
+function mostrarEstado(msg) {
+  statusEl.textContent = msg || "";
+  statusEl.style.display = msg ? "block" : "none";
+}
+
+/* Revisa qué archivos .glb existen en el repo */
+async function existe(file) {
+  try {
+    const r = await fetch(CARPETA + file, { method: "HEAD", cache: "no-store" });
+    return r.ok;
+  } catch (e) {
+    return true; // si no se puede comprobar, se muestra igual
+  }
+}
+
+function llenarSelect() {
+  lista = DATA[modo].items;
+  select.innerHTML = "";
+  lista.forEach(function (it, i) {
+    const op = document.createElement("option");
+    op.value = i;
+    op.textContent = it.emoji + " " + it.nombre + (it.ok ? "" : " (falta " + it.file + ")");
+    select.appendChild(op);
+  });
+  document.getElementById("modeTitle").textContent = DATA[modo].titulo;
+}
+
+function cargar(i) {
+  detenerVoz();
+  resetMano();
+  if (!lista.length) {
+    actual = null;
+    viewer.removeAttribute("src");
+    document.getElementById("infoTitle").textContent = "Aún no hay modelos aquí";
+    document.getElementById("infoText").textContent = "Sube tus archivos .glb al repositorio (por ejemplo delfin.glb) y vuelve a abrir la página.";
+    document.getElementById("infoFact").textContent = "";
+    mostrarEstado("No se encontraron archivos .glb para esta sección.");
+    return;
+  }
+  actual = lista[i];
+  mostrarEstado("Cargando " + actual.nombre + "…");
+  viewer.alt = "Modelo 3D de " + actual.nombre;
+  viewer.src = CARPETA + actual.file;
+  aplicarTamano(1);
+  document.getElementById("infoTitle").textContent = actual.emoji + " " + actual.nombre;
+  document.getElementById("infoText").textContent = actual.texto;
+  document.getElementById("infoFact").textContent = actual.dato;
+}
+
+viewer.addEventListener("load", function () {
+  mostrarEstado("");
+  nadoInfo = undefined; nombreOriginal = undefined;
+  if (pausado && viewer.pause) viewer.pause();   // si estaba en pausa, el nuevo modelo también
+});
+viewer.addEventListener("error", function () {
+  mostrarEstado("No se encontró " + (actual ? actual.file : "el modelo") + " dentro de la carpeta modelos. Debe llamarse exactamente así.");
+});
+viewer.addEventListener("ar-status", function (e) {
+  if (e.detail.status === "failed") {
+    mostrarEstado("No se pudo iniciar la realidad aumentada en este dispositivo.");
+  }
+});
+
+function cambiarModo(nuevo) {
+  modo = nuevo;
+  document.getElementById("tabPlanetas").classList.toggle("on", nuevo === "planetas");
+  document.getElementById("tabMarino").classList.toggle("on", nuevo === "marino");
+  llenarSelect();
+  cargar(0);
+}
+document.getElementById("tabPlanetas").addEventListener("click", function () { cambiarModo("planetas"); });
+document.getElementById("tabMarino").addEventListener("click", function () { cambiarModo("marino"); });
+select.addEventListener("change", function () { cargar(parseInt(select.value, 10)); });
+
+/* Cámara / realidad aumentada */
+document.getElementById("arBtn").addEventListener("click", function () {
+  if (!actual) return;
+  if (viewer.canActivateAR) {
+    viewer.activateAR();
+  } else {
+    mostrarEstado("Este celular o navegador no permite colocar objetos en AR. Prueba con Chrome en un Android con ARCore.");
+    setTimeout(function () { mostrarEstado(""); }, 5000);
+  }
+});
+
+/* Pausa: congela el giro y la animación del modelo (nado del delfín, etc.) */
+let pausado = false;
+function setPausa(p) {
+  pausado = p;
+  if (p) {
+    viewer.removeAttribute("auto-rotate");
+    if (viewer.pause) viewer.pause();
+  } else {
+    if (!manoActiva) viewer.setAttribute("auto-rotate", "");   // en modo mano el giro lo controla la mano
+    if (viewer.play) viewer.play();
+  }
+  btnRotar.classList.toggle("on", !p);
+  btnRotar.textContent = p ? "▶️ Reanudar" : "⏸️ Pausar";
+}
+btnRotar.addEventListener("click", function () { setPausa(!pausado); });
+
+/* Tamaño de la vista previa */
+function aplicarTamano(v) {
+  v = Math.min(2.5, Math.max(0.3, v));
+  sizeEl.value = v;
+  viewer.scale = v + " " + v + " " + v;
+  sizeVal.textContent = Math.round(v * 100) + "%";
+}
+sizeEl.addEventListener("input", function () { aplicarTamano(parseFloat(sizeEl.value)); });
+document.getElementById("btnMas").addEventListener("click", function () { aplicarTamano(parseFloat(sizeEl.value) + 0.2); });
+document.getElementById("btnMenos").addEventListener("click", function () { aplicarTamano(parseFloat(sizeEl.value) - 0.2); });
+
+/* Voz */
+function detenerVoz() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  btnVoz.classList.remove("on");
+}
+btnVoz.addEventListener("click", function () {
+  if (!("speechSynthesis" in window) || !actual) return;
+  if (speechSynthesis.speaking) { detenerVoz(); return; }
+  const u = new SpeechSynthesisUtterance(actual.nombre + ". " + actual.texto + " " + actual.dato);
+  u.lang = "es-MX";
+  u.onend = function () { btnVoz.classList.remove("on"); };
+  btnVoz.classList.add("on");
+  speechSynthesis.speak(u);
+});
+
+/* ============================================================
+   MODO MANO: seguimiento de 21 puntos por mano (MediaPipe Hands)
+   Gestos:
+   - Pellizco (pulgar + índice) sobre el objeto: tomarlo y moverlo
+   - Pellizco + girar la muñeca: rotar el objeto
+   - Pellizco + acercar/alejar la mano: tamaño
+   - Pellizco con las dos manos: tamaño según la separación
+   - Puño: pausa / Palma abierta mantenida: reanudar
+   - Deslizar la mano abierta: siguiente / anterior objeto
+   - Pulgar arriba: escuchar la explicación
+   - Doble toque rápido de pellizco: centrar
+   Al tomarlo, la animación se mantiene (nado) pero SIN el recorrido.
+   ============================================================ */
+const stage      = document.querySelector(".stage");
+const camVideo   = document.getElementById("camVideo");
+const handCanvas = document.getElementById("handCanvas");
+const hctx       = handCanvas.getContext("2d");
+const btnMano    = document.getElementById("btnMano");
+const handTools  = document.getElementById("handTools");
+
+/* --- Ajustes (puedes cambiarlos si algún gesto es muy sensible) --- */
+const PELLIZCO_ON  = 0.28;  // distancia pulgar-índice (relativa a la mano) para tomar
+const PELLIZCO_OFF = 0.45;  // distancia para soltar (mayor, evita parpadeos)
+const ESCALA_MIN = 0.3, ESCALA_MAX = 2.2;
+const GIRO_SENTIDO = 1;     // pon -1 si el objeto gira al revés de tu muñeca
+const GIRO_VELOCIDAD = 1.3; // qué tanto gira el objeto por cada giro de la muñeca
+const GIRO_ZONA_MUERTA = 0.2; // radianes (~11°) que se ignoran para evitar giros sin querer
+const FRAMES_PUNO = 10, FRAMES_PALMA = 25, FRAMES_PULGAR = 12;
+
+let manoActiva = false, landmarker = null, stream = null, usarFrontal = false;
+let rafId = 0, ultimoT = -1;
+let pos = { x: 0, y: 0, s: 1 };       // posición mostrada (suavizada)
+let objetivo = { x: 0, y: 0, s: 1 };  // posición que pide la mano
+let agarre = null, agarre2 = null;    // agarre con una mano / con dos manos
+let orbitaBase = null;                // orientación original, para "Centrar"
+const estados = [];                   // estado de pellizco de cada mano
+const sostenidos = {};                // contadores de gestos mantenidos
+const trazo = [];                     // recorrido de la palma para detectar el deslizamiento
+let bloqueoDeslizar = 0, ultimoToque = 0, avisoT = 0;
+
+/* --- Animación: nadar sin recorrido --- */
+let nadoInfo;            // undefined = sin calcular, null = no se pudo, texto = nombre de la animación
+let nombreOriginal;      // animación que tenía el modelo antes de tomarlo
+let nadando = false;     // true mientras se usa la animación sin recorrido
+let congelado = false;   // respaldo: si no se pudo separar el recorrido, se congela mientras se sostiene
+
+function aplicarTransformacion() {
+  viewer.style.transform = "translate(" + pos.x + "px," + pos.y + "px) scale(" + pos.s + ")";
+}
+function resetMano() {
+  pos = { x: 0, y: 0, s: 1 };
+  objetivo = { x: 0, y: 0, s: 1 };
+  agarre = null; agarre2 = null;
+  orbitaBase = null;
+  estados.length = 0;
+  viewer.style.transform = "";
+  restaurarAnimacion();
+  if (congelado) { congelado = false; if (!pausado && viewer.play) viewer.play(); }
+}
+function aviso(txt) {
+  mostrarEstado(txt);
+  clearTimeout(avisoT);
+  avisoT = setTimeout(function () { if (manoActiva) mostrarEstado(""); }, 1300);
+}
+
+/* ---------- Detector de manos y cámara ---------- */
+async function cargarLandmarker() {
+  if (landmarker) return landmarker;
+  const base = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+  const mod = await import(base + "/vision_bundle.mjs");
+  const fileset = await mod.FilesetResolver.forVisionTasks(base + "/wasm");
+  const opciones = function (delegate) {
+    return {
+      baseOptions: {
+        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        delegate: delegate
+      },
+      runningMode: "VIDEO",
+      numHands: 2
+    };
+  };
+  try {
+    landmarker = await mod.HandLandmarker.createFromOptions(fileset, opciones("GPU"));
+  } catch (e) {
+    landmarker = await mod.HandLandmarker.createFromOptions(fileset, opciones("CPU"));
+  }
+  return landmarker;
+}
+
+function cerrarCamara() {
+  if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+  camVideo.srcObject = null;
+}
+async function abrirCamara() {
+  cerrarCamara();
+  stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: usarFrontal ? "user" : "environment", width: { ideal: 640 }, height: { ideal: 480 } },
+    audio: false
+  });
+  camVideo.srcObject = stream;
+  camVideo.classList.toggle("espejo", usarFrontal);
+  await camVideo.play();
+}
+
+/* Convierte un punto normalizado del video a píxeles del recuadro (el video usa object-fit: cover) */
+function aPantalla(lm, w, h) {
+  const vw = camVideo.videoWidth, vh = camVideo.videoHeight;
+  const k = Math.max(w / vw, h / vh);
+  const dw = vw * k, dh = vh * k;
+  let x = lm.x * dw + (w - dw) / 2;
+  const y = lm.y * dh + (h - dh) / 2;
+  if (usarFrontal) x = w - x;
+  return { x: x, y: y };
+}
+
+/* ¿El punto está sobre el objeto? (el visor ocupa el 70% del recuadro, más lo movido/escalado) */
+function dentro(p) {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  const cx = w / 2 + pos.x, cy = h / 2 + pos.y;
+  return Math.abs(p.x - cx) <= 0.35 * w * pos.s && Math.abs(p.y - cy) <= 0.35 * h * pos.s;
+}
+
+/* ---------- Animación sin recorrido ---------- */
+function escenaInterna() {
+  const sim = Object.getOwnPropertySymbols(viewer).find(function (x) { return x.description === "scene"; });
+  return sim ? viewer[sim] : null;
+}
+/* ¿Esta pista de la animación es parte del recorrido (mover el modelo completo por el espacio)? */
+function esRecorrido(sc, t) {
+  const i = t.name.lastIndexOf(".");
+  if (i < 0) return false;
+  const nodo = t.name.slice(0, i), prop = t.name.slice(i + 1);
+  if (prop.indexOf("morphTarget") === 0) return false;       // formas del cuerpo: se conservan
+  const obj = sc.getObjectByName(nodo);
+  if (!obj) return false;
+  if (obj.isBone) return prop === "position" && !(obj.parent && obj.parent.isBone); // hueso raíz que se traslada
+  return prop === "position" || prop === "quaternion";       // objetos/vacíos que llevan el modelo por la ruta
+}
+function prepararNado() {
+  if (nadoInfo !== undefined) return nadoInfo;
+  nadoInfo = null;
+  const nombres = viewer.availableAnimations || [];
+  const orig = viewer.animationName || nombres[0];
+  if (!orig) return null;
+  // 1) Si en Blender exportaste una animación aparte (Nado, Swim, Ciclo...), se usa esa
+  const propia = nombres.find(function (n) {
+    return n !== orig && /nado|swim|sin[_ ]?recorrido|in[_ ]?place|cycle|ciclo/i.test(n);
+  });
+  if (propia) { nadoInfo = propia; return nadoInfo; }
+  // 2) Si no, se arma una copia de la animación quitando las pistas del recorrido
+  try {
+    const sc = escenaInterna();
+    const clip = sc && sc.animationsByName && sc.animationsByName.get(orig);
+    if (!clip) return null;
+    const copia = clip.clone();
+    copia.name = "__nado__";
+    copia.tracks = copia.tracks.filter(function (t) { return !esRecorrido(sc, t); });
+    if (!copia.tracks.length || copia.tracks.length === clip.tracks.length) return null; // nada que separar
+    sc.animationsByName.set(copia.name, copia);
+    nadoInfo = copia.name;
+  } catch (e) {
+    console.warn("No se pudo separar el recorrido de la animación:", e);
+  }
+  return nadoInfo;
+}
+function entrarNado() {
+  const nombre = prepararNado();
+  if (!nombre) return false;
+  if (nombreOriginal === undefined) nombreOriginal = viewer.animationName || null;
+  viewer.animationName = nombre;
+  viewer.play();
+  nadando = true;
+  return true;
+}
+function restaurarAnimacion() {
+  if (!nadando) return;
+  nadando = false;
+  if (nombreOriginal) viewer.animationName = nombreOriginal;
+  else viewer.removeAttribute("animation-name");
+  nombreOriginal = undefined;
+  if (pausado) { if (viewer.pause) viewer.pause(); } else if (viewer.play) viewer.play();
+}
+/* Mientras se sostiene el objeto: nada sin recorrido. Al soltar: vuelve como estaba. */
+function actualizarNado(agarrado) {
+  if (agarrado) {
+    if (!nadando && !congelado) {
+      if (!entrarNado() && !pausado && viewer.pause) { viewer.pause(); congelado = true; }
+    }
+  } else {
+    if (nadando) restaurarAnimacion();
+    if (congelado) { congelado = false; if (!pausado && viewer.play) viewer.play(); }
+  }
+}
+
+/* ---------- Análisis de cada mano ---------- */
+function analizar(lms, w, h) {
+  const vw = camVideo.videoWidth, vh = camVideo.videoHeight;
+  const d = function (a, b) { return Math.hypot((a.x - b.x) * vw, (a.y - b.y) * vh); };
+  const tam = d(lms[0], lms[9]) || 1;                 // muñeca a base del dedo medio: crece al acercar la mano
+  const ratio = d(lms[4], lms[8]) / tam;              // pulgar-índice relativo al tamaño de la mano
+  let ext = 0, curl = 0;
+  [[8, 6], [12, 10], [16, 14], [20, 18]].forEach(function (f) {
+    const punta = d(lms[f[0]], lms[0]), pip = d(lms[f[1]], lms[0]);
+    if (punta > pip * 1.12) ext++;                    // dedo estirado
+    if (punta < pip * 0.97) curl++;                   // dedo doblado
+  });
+  const pulgarArriba = curl === 4 &&
+    lms[4].y < lms[3].y && lms[3].y < lms[2].y && (lms[0].y - lms[4].y) * vh > tam * 0.9;
+  const a = aPantalla(lms[4], w, h), b = aPantalla(lms[8], w, h);
+  const m0 = aPantalla(lms[0], w, h), m9 = aPantalla(lms[9], w, h);
+  return {
+    tam: tam, ratio: ratio, ext: ext, curl: curl,
+    a: a, b: b,
+    p: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },     // punto medio del pellizco
+    centro: m9,
+    ang: Math.atan2(m9.y - m0.y, m9.x - m0.x),          // ángulo de la mano (para girar la muñeca)
+    pulgarArriba: pulgarArriba,
+    puno: curl === 4 && ratio > 0.45 && !pulgarArriba,
+    palma: ext === 4 && ratio > 0.6
+  };
+}
+
+/* Devuelve true UNA vez cuando el gesto se mantiene suficientes cuadros seguidos */
+function sostener(nombre, activo, frames) {
+  const g = sostenidos[nombre] || (sostenidos[nombre] = { n: 0, hecho: false });
+  if (!activo) { g.n = 0; g.hecho = false; return false; }
+  g.n++;
+  if (g.n >= frames && !g.hecho) { g.hecho = true; return true; }
+  return false;
+}
+/* Deslizar la mano abierta de lado: 1 = siguiente, -1 = anterior, 0 = nada */
+function deslizar(m, ahora, w, h) {
+  if (!m || m.ext < 3 || m.pinch) { trazo.length = 0; return 0; }
+  trazo.push({ t: ahora, x: m.centro.x, y: m.centro.y });
+  while (trazo.length && ahora - trazo[0].t > 600) trazo.shift();
+  if (ahora < bloqueoDeslizar) return 0;
+  const a = trazo[0], b = trazo[trazo.length - 1];
+  const dx = b.x - a.x, dy = b.y - a.y;
+  if (Math.abs(dx) > 0.5 * w && Math.abs(dy) < 0.25 * h) {
+    bloqueoDeslizar = ahora + 1500;
+    trazo.length = 0;
+    return dx < 0 ? 1 : -1;
+  }
+  return 0;
+}
+function cambiarObjeto(delta) {
+  const n = lista.length;
+  if (n < 2) return;
+  let i = parseInt(select.value, 10) || 0;
+  for (let k = 0; k < n; k++) {
+    i = (i + delta + n) % n;
+    if (lista[i].ok !== false) break;
+  }
+  select.value = i;
+  cargar(i);
+}
+
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+function dibujarMano(m, tomado) {
+  hctx.lineWidth = 3;
+  hctx.strokeStyle = tomado ? "#3dff8f" : "rgba(255,255,255,.7)";
+  hctx.beginPath(); hctx.moveTo(m.a.x, m.a.y); hctx.lineTo(m.b.x, m.b.y); hctx.stroke();
+  [m.a, m.b].forEach(function (q) {
+    hctx.fillStyle = "#fff";
+    hctx.beginPath(); hctx.arc(q.x, q.y, 6, 0, Math.PI * 2); hctx.fill();
+  });
+  hctx.beginPath(); hctx.arc(m.p.x, m.p.y, tomado ? 22 : 16, 0, Math.PI * 2); hctx.stroke();
+}
+
+/* ---------- Un cuadro de video ---------- */
+function procesar(listas) {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (handCanvas.width !== w || handCanvas.height !== h) { handCanvas.width = w; handCanvas.height = h; }
+  hctx.clearRect(0, 0, w, h);
+  const ahora = performance.now();
+  const manos = (listas || []).map(function (lms) { return analizar(lms, w, h); });
+
+  if (!manos.length) {
+    agarre = null; agarre2 = null; estados.length = 0; trazo.length = 0;
+    ["puno", "palma", "pulgar"].forEach(function (n) { sostener(n, false, 1); });
+    actualizarNado(false);
+    return;
+  }
+  estados.length = manos.length;
+
+  /* 1) Pellizco de cada mano (con histéresis) y doble toque */
+  manos.forEach(function (m, i) {
+    const e = estados[i] || (estados[i] = { pinch: false, desde: 0 });
+    const antes = e.pinch;
+    if (!e.pinch && m.ratio < PELLIZCO_ON) e.pinch = true;
+    else if (e.pinch && m.ratio > PELLIZCO_OFF) e.pinch = false;
+    m.pinch = e.pinch;
+    m.inicio = e.pinch && !antes;
+    if (m.inicio) e.desde = ahora;
+    if (!e.pinch && antes && ahora - e.desde < 350) {     // toque rápido
+      if (ahora - ultimoToque < 600) { centrarObjeto(); aviso("🎯 Centrado"); ultimoToque = 0; }
+      else ultimoToque = ahora;
+    }
+  });
+
+  /* 2) Agarre con las dos manos: tamaño según la separación */
+  const dos = manos.length >= 2 && manos[0].pinch && manos[1].pinch;
+  if (dos) {
+    const mx = (manos[0].p.x + manos[1].p.x) / 2, my = (manos[0].p.y + manos[1].p.y) / 2;
+    const dist = Math.hypot(manos[0].p.x - manos[1].p.x, manos[0].p.y - manos[1].p.y) || 1;
+    if (!agarre2 && (manos[0].inicio || manos[1].inicio) && dentro({ x: mx, y: my })) {
+      agarre2 = { d0: dist, s0: objetivo.s, mx: mx, my: my, ox: objetivo.x, oy: objetivo.y };
+      agarre = null;
+      aviso("🤲 Tamaño con dos manos");
+    }
+    if (agarre2) {
+      objetivo.s = clamp(agarre2.s0 * (dist / agarre2.d0), ESCALA_MIN, ESCALA_MAX);
+      objetivo.x = clamp(agarre2.ox + (mx - agarre2.mx), -w / 2, w / 2);
+      objetivo.y = clamp(agarre2.oy + (my - agarre2.my), -h / 2, h / 2);
+    }
+  } else {
+    agarre2 = null;
+    /* 3) Agarre con una mano: mover, tamaño por distancia y rotar con la muñeca */
+    if (agarre) {
+      const m = manos[agarre.mano];
+      if (!m || !m.pinch) agarre = null;
+    }
+    if (!agarre) {
+      manos.forEach(function (m, i) {
+        if (!agarre && m.inicio && dentro(m.p)) {
+          if (!orbitaBase && viewer.getCameraOrbit) orbitaBase = viewer.getCameraOrbit();
+          const o = viewer.getCameraOrbit ? viewer.getCameraOrbit() : null;
+          agarre = {
+            mano: i, dx: m.p.x - objetivo.x, dy: m.p.y - objetivo.y,
+            tam0: m.tam, s0: objetivo.s,
+            angPrev: m.ang, acum: 0, orbita: o, theta0: o ? o.theta : 0
+          };
+          aviso("🤏 Tomado");
+        }
+      });
+    }
+    if (agarre) {
+      const m = manos[agarre.mano];
+      objetivo.x = clamp(m.p.x - agarre.dx, -w / 2, w / 2);
+      objetivo.y = clamp(m.p.y - agarre.dy, -h / 2, h / 2);
+      objetivo.s = clamp(agarre.s0 * (m.tam / agarre.tam0), ESCALA_MIN, ESCALA_MAX);
+      // rotación: cuánto giró la muñeca desde que se tomó (con zona muerta)
+      let da = m.ang - agarre.angPrev;
+      while (da > Math.PI) da -= 2 * Math.PI;
+      while (da < -Math.PI) da += 2 * Math.PI;
+      agarre.acum += da;
+      agarre.angPrev = m.ang;
+      const ef = Math.abs(agarre.acum) > GIRO_ZONA_MUERTA
+        ? agarre.acum - Math.sign(agarre.acum) * GIRO_ZONA_MUERTA : 0;
+      if (agarre.orbita && ef !== 0) {
+        const th = agarre.theta0 + GIRO_SENTIDO * ef * GIRO_VELOCIDAD;
+        viewer.cameraOrbit = th + "rad " + agarre.orbita.phi + "rad " + agarre.orbita.radius + "m";
+      }
+    }
+  }
+
+  /* 4) Gestos sin pellizco: puño, palma, pulgar arriba y deslizar */
+  const libre = !agarre && !agarre2;
+  const m = libre ? manos.find(function (x) { return !x.pinch; }) : null;
+  if (sostener("puno", !!(m && m.puno), FRAMES_PUNO) && !pausado) { setPausa(true); aviso("✊ Pausa"); }
+  if (sostener("palma", !!(m && m.palma), FRAMES_PALMA) && pausado) { setPausa(false); aviso("🖐️ Reanudar"); }
+  if (sostener("pulgar", !!(m && m.pulgarArriba), FRAMES_PULGAR)) { btnVoz.click(); aviso("👍 Explicación"); }
+  const paso = deslizar(m, ahora, w, h);
+  if (paso) { cambiarObjeto(paso); aviso(paso > 0 ? "👉 Siguiente" : "👈 Anterior"); }
+
+  /* 5) Animación: nadar sin recorrido mientras se sostiene */
+  actualizarNado(!!(agarre || agarre2));
+
+  manos.forEach(function (mm, i) {
+    dibujarMano(mm, !!((agarre && agarre.mano === i) || agarre2));
+  });
+}
+
+function bucle() {
+  if (!manoActiva) return;
+  rafId = requestAnimationFrame(bucle);
+  if (camVideo.readyState >= 2 && camVideo.currentTime !== ultimoT) {
+    ultimoT = camVideo.currentTime;
+    try {
+      const res = landmarker.detectForVideo(camVideo, performance.now());
+      procesar(res.landmarks);
+    } catch (e) { console.warn(e); }
+  }
+  // suavizado para que el movimiento no tiemble
+  pos.x += (objetivo.x - pos.x) * 0.35;
+  pos.y += (objetivo.y - pos.y) * 0.35;
+  pos.s += (objetivo.s - pos.s) * 0.25;
+  aplicarTransformacion();
+}
+
+async function encenderMano() {
+  if (!actual) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    mostrarEstado("Este navegador no permite usar la cámara aquí. Abre la página con HTTPS en Chrome.");
+    return;
+  }
+  mostrarEstado("Preparando cámara y detector de manos… (la primera vez tarda unos segundos)");
+  try {
+    manoActiva = true;               // desde ya: el giro automático queda apagado
+    setPausa(true);                  // quieto para poder tomarlo
+    stage.classList.add("hand");
+    await abrirCamara();
+    await cargarLandmarker();
+    btnMano.classList.add("on");
+    btnMano.textContent = "✋ Modo mano activado";
+    handTools.style.display = "grid";
+    mostrarEstado("Pellizca sobre el objeto para tomarlo.");
+    setTimeout(function () { if (manoActiva) mostrarEstado(""); }, 4000);
+    bucle();
+  } catch (e) {
+    apagarMano();
+    mostrarEstado("No se pudo activar el modo mano. Revisa que diste permiso a la cámara y que hay internet.");
+  }
+}
+function apagarMano() {
+  manoActiva = false;
+  cancelAnimationFrame(rafId);
+  cerrarCamara();
+  stage.classList.remove("hand");
+  hctx.clearRect(0, 0, handCanvas.width, handCanvas.height);
+  resetMano();
+  btnMano.classList.remove("on");
+  btnMano.textContent = "✋ Tomar con la mano";
+  handTools.style.display = "none";
+}
+
+btnMano.addEventListener("click", function () {
+  if (manoActiva) apagarMano(); else encenderMano();
+});
+document.getElementById("btnCentrar").addEventListener("click", function () { centrarObjeto(); });
+document.getElementById("btnCamara").addEventListener("click", async function () {
+  if (!manoActiva) return;
+  usarFrontal = !usarFrontal;
+  try { await abrirCamara(); }
+  catch (e) { usarFrontal = !usarFrontal; mostrarEstado("No se pudo cambiar de cámara."); }
+});
+
+/* ============================================================
+   PANTALLA COMPLETA
+   Usa la pantalla completa real del navegador cuando existe y,
+   si no (por ejemplo en iPhone), un modo que ocupa toda la ventana.
+   ============================================================ */
+const fsBtn = document.getElementById("fsBtn");
+let enPantallaCompleta = false;
+
+function centrarObjeto() {
+  objetivo = { x: 0, y: 0, s: 1 };
+  agarre = null; agarre2 = null;
+  if (orbitaBase) {
+    viewer.cameraOrbit = orbitaBase.theta + "rad " + orbitaBase.phi + "rad " + orbitaBase.radius + "m";
+  }
+}
+function entrarPantallaCompleta() {
+  enPantallaCompleta = true;
+  stage.classList.add("fs");
+  document.body.style.overflow = "hidden";
+  fsBtn.textContent = "✖";
+  fsBtn.setAttribute("aria-label", "Salir de pantalla completa");
+  centrarObjeto();
+  try {
+    if (stage.requestFullscreen) stage.requestFullscreen().catch(function () {});
+    else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+  } catch (e) { /* queda el modo que ocupa toda la ventana */ }
+}
+function salirPantallaCompleta() {
+  enPantallaCompleta = false;
+  stage.classList.remove("fs");
+  document.body.style.overflow = "";
+  fsBtn.textContent = "⛶";
+  fsBtn.setAttribute("aria-label", "Pantalla completa");
+  centrarObjeto();
+  try {
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+    else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } catch (e) {}
+}
+fsBtn.addEventListener("click", function () {
+  if (enPantallaCompleta) salirPantallaCompleta(); else entrarPantallaCompleta();
+});
+function alCambiarFS() {
+  // si el usuario salió con el botón "atrás" o el gesto del sistema
+  if (enPantallaCompleta && !document.fullscreenElement && !document.webkitFullscreenElement) {
+    salirPantallaCompleta();
+  }
+}
+document.addEventListener("fullscreenchange", alCambiarFS);
+document.addEventListener("webkitfullscreenchange", alCambiarFS);
+
+document.getElementById("fsCentrar").addEventListener("click", centrarObjeto);
+document.getElementById("fsCamara").addEventListener("click", function () {
+  document.getElementById("btnCamara").click();
+});
+
+/* Inicio: detecta qué .glb existen y arranca en la primera sección con modelos */
+async function iniciar() {
+  mostrarEstado("Buscando modelos…");
+  const todos = DATA.planetas.items.concat(DATA.marino.items);
+  await Promise.all(todos.map(async function (it) { it.ok = await existe(it.file); }));
+
+  const hayPlanetas = DATA.planetas.items.some(function (it) { return it.ok; });
+  const hayMarino = DATA.marino.items.some(function (it) { return it.ok; });
+  cambiarModo(!hayPlanetas && hayMarino ? "marino" : "planetas");
+
+  setTimeout(function () {
+    if (!customElements.get("model-viewer")) {
+      mostrarEstado("No se pudo cargar el visor 3D. Revisa tu conexión a internet y recarga la página.");
+    }
+  }, 4000);
+}
+iniciar();
+</script>
+</body>
+</html>
